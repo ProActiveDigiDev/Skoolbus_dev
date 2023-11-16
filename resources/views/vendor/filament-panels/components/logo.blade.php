@@ -1,1 +1,0 @@
-<img src="{{ asset('storage/branding/logo.png') }}" alt="Logo" class="h-10">
