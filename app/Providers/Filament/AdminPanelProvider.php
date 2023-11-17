@@ -27,8 +27,15 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->registration()
+            ->passwordReset()
+            ->emailVerification()
+            ->brandName('Skoolbus')
+            ->brandLogo(asset('storage/branding/logo.png'))
+            ->brandLogoHeight('60px')
+            ->favicon(asset('storage/branding/favicon.png'))
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#fdd219',
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
