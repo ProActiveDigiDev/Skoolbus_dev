@@ -6,8 +6,9 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
+use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
-use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\User\Pages\EditProfile;
 use Filament\Http\Middleware\Authenticate;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -29,8 +30,11 @@ class UserPanelProvider extends PanelProvider
             ->login()
             ->registration()
             ->passwordReset()
+            ->profile()
+            ->userMenuItems([ 
+                'profile' => MenuItem::make()->url(fn (): string => EditProfile::getUrl())
+            ])
             ->emailVerification()
-            ->profile(EditProfile::class)
             ->brandName('Skoolbus')
             ->brandLogo(asset('storage/branding/logo.png'))
             ->darkModeBrandLogo(asset('storage/branding/logo_dark.png'))
