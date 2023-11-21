@@ -56,7 +56,8 @@ class EditProfile extends Page implements HasForms
         // abort_unless(auth()->user()->hasRole(['Admin', 'Owner', 'Parent', 'Driver']), 403);
         $user = $users::find(auth()->user()->id)->toArray();
 
-        // dd($user);
+        // dd($users);
+        
         
         $this->form->fill($user);
     }
