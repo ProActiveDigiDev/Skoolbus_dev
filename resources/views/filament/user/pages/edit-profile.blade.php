@@ -3,7 +3,7 @@
         @csrf
         {{ $this->form }}
         
-        <div class="py-6">
+        <div class="">
             <x-filament::button wire:click="submit" outlined>
                 Save
             </x-filament::button>
