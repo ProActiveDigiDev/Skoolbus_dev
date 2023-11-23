@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\User\Pages;
+namespace App\Filament\Admin\Pages;
 
 use App\Models\User;
 use Filament\Forms\Form;
@@ -79,7 +79,7 @@ class editProfile extends Page implements HasForms
         $user->email = $state['email'];
         $user->save();
 
-        $this->redirect('/Busstop/edit-profile');
+        $this->redirect('/admin/edit-profile');
 
         $this->form->fill($state);        
     }
