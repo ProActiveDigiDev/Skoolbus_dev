@@ -4,27 +4,27 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d210a5212354878f733b7370e0bfad33",
+    "content-hash": "49fe664e6da59fcbfdb8ee63099e501a",
     "packages": [
         {
             "name": "bezhansalleh/filament-shield",
-            "version": "3.0.11",
+            "version": "3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bezhanSalleh/filament-shield.git",
-                "reference": "e0e8cc486f25ea00dd52c9c51d67c747f41b0b28"
+                "reference": "580b606d7580a15ea60e5fc7e61b5e59e5f30987"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bezhanSalleh/filament-shield/zipball/e0e8cc486f25ea00dd52c9c51d67c747f41b0b28",
-                "reference": "e0e8cc486f25ea00dd52c9c51d67c747f41b0b28",
+                "url": "https://api.github.com/repos/bezhanSalleh/filament-shield/zipball/580b606d7580a15ea60e5fc7e61b5e59e5f30987",
+                "reference": "580b606d7580a15ea60e5fc7e61b5e59e5f30987",
                 "shasum": ""
             },
             "require": {
                 "filament/filament": "^3.0",
                 "php": "^8.1",
                 "spatie/laravel-package-tools": "^1.9",
-                "spatie/laravel-permission": "^5.0|^6.0"
+                "spatie/laravel-permission": "^6.0"
             },
             "require-dev": {
                 "laravel/pint": "^1.0",
@@ -81,7 +81,7 @@
             ],
             "support": {
                 "issues": "https://github.com/bezhanSalleh/filament-shield/issues",
-                "source": "https://github.com/bezhanSalleh/filament-shield/tree/3.0.11"
+                "source": "https://github.com/bezhanSalleh/filament-shield/tree/3.1.0"
             },
             "funding": [
                 {
@@ -89,7 +89,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-11-03T19:00:25+00:00"
+            "time": "2023-11-22T20:46:39+00:00"
         },
         {
             "name": "blade-ui-kit/blade-heroicons",
