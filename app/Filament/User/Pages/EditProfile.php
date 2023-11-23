@@ -85,6 +85,7 @@ class editProfile extends Page implements HasForms
         $this->form->fill($state);        
     }
 
+    
     public static function shouldRegisterNavigation(): bool
     {
         // return auth()->user()->hasRole(['Admin', 'Owner', 'Parent', 'Driver']);
