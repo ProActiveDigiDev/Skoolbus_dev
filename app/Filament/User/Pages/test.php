@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Admin\Pages;
+namespace App\Filament\User\Pages;
 
 use App\Models\User;
 use Filament\Forms\Form;
@@ -12,16 +12,15 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
-
-class editProfile extends Page implements HasForms
+class test extends Page implements HasForms
 {
     use InteractsWithForms, HasPageShield;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static string $view = 'filament.user.pages.edit-profile';
+    protected static string $view = 'filament.user.pages.test';
 
-    protected static ?string $navigationLabel = 'My Profile';
+    protected static ?string $navigationLabel = 'Fokken Werk net Asseblief';
 
     public ?array $data = [];
 
@@ -33,7 +32,6 @@ class editProfile extends Page implements HasForms
     public function mount(): void
     {
         // abort_unless(auth()->user()->id, 403);
-
 
         $data = User::find(auth()->user()->id);
         $this->form->fill($data->toArray());
@@ -81,7 +79,7 @@ class editProfile extends Page implements HasForms
         $user->email = $state['email'];
         $user->save();
 
-        $this->redirect('/admin/edit-profile');
+        $this->redirect('/Busstop/edit-profile');
 
         $this->form->fill($state);        
     }
