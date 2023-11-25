@@ -22,11 +22,13 @@ class editProfile extends Page implements HasForms
 {
     use InteractsWithForms, HasPageShield;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
 
     protected static string $view = 'filament.user.pages.edit-profile';
 
     protected static ?string $navigationLabel = 'My Profile';
+
+    protected static ?string $title = 'My Profile';
 
     public static function getNavigationGroup(): ?string
     {
@@ -69,15 +71,17 @@ class editProfile extends Page implements HasForms
                     ->description('Basic Account Information.')
                     ->schema([
                         TextInput::make('name')
+                        ->label('Username.')
                         ->autofocus()
                         ->required()
-                        ->label('Username.')
+                        ->unique()
                         ->maxLength(255),
 
                         TextInput::make('email')
                         ->label('Email address')
                         ->email()
                         ->required()
+                        ->unique()
                         ->maxLength(255),
                     ])
                     ->columns(2)
@@ -128,20 +132,20 @@ class editProfile extends Page implements HasForms
 
                 Grid::make()
                 ->schema([
-                    TextInput::make('email')
-                    ->label('Email address (2)')
-                    ->email()
-                    ->maxLength(255)
-                    ->columnSpan(2),
-
                     TextInput::make('phone')
                     ->label('Phone number')
                     ->tel()
                     ->required(),
             
                     TextInput::make('phone_alt')
-                    ->label('Phone number (2)')
+                    ->label('Phone number (w)')
                     ->tel(),
+
+                    TextInput::make('email')
+                    ->label('Email address (w)')
+                    ->email()
+                    ->maxLength(255)
+                    ->columnSpan(2),
             
                     Textarea::make('address')
                     ->label('Home address')

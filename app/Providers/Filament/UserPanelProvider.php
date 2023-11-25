@@ -31,7 +31,7 @@ class UserPanelProvider extends PanelProvider
             ->passwordReset()
             ->profile()
             ->userMenuItems([
-                'profile' => MenuItem::make()->url(fn (): string => EditProfile::getUrl()),
+                'My profile' => MenuItem::make()->url(fn (): string => EditProfile::getUrl()),
             ])
             ->emailVerification()
             ->brandName('Skoolbus')
