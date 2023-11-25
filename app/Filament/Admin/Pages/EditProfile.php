@@ -33,8 +33,6 @@ class editProfile extends Page implements HasForms
     public function mount(): void
     {
         // abort_unless(auth()->user()->id, 403);
-
-
         $data = User::find(auth()->user()->id);
         $this->form->fill($data->toArray());
     }
@@ -63,9 +61,7 @@ class editProfile extends Page implements HasForms
                 ->columnSpan(1),
             ])
             ->statePath('data');
-    }
-
-    
+    }    
 
     public function submit()
     {

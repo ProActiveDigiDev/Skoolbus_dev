@@ -13,6 +13,7 @@ use Filament\Widgets\AccountWidget;
 use Filament\Navigation\NavigationItem;
 use App\Filament\Resources\UserResource;
 use Filament\Widgets\FilamentInfoWidget;
+use App\Filament\Admin\Pages\EditProfile;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Navigation\NavigationBuilder;
 use Illuminate\Session\Middleware\StartSession;
@@ -35,6 +36,13 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->passwordReset()
+            ->userMenuItems([
+                'profile' => MenuItem::make()->url(fn (): string => EditProfile::getUrl()),
+                MenuItem::make()
+                ->label('Go to Busstop')
+                ->url('/Busstop')
+                ->icon('heroicon-o-arrow-down-on-square-stack'),
+            ])
             ->brandName('Skoolbus')
             ->brandLogo(asset('storage/branding/logo.png'))
             ->darkModeBrandLogo(asset('storage/branding/logo_dark.png'))
