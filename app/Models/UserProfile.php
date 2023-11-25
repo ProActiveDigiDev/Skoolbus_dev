@@ -15,7 +15,24 @@ class UserProfile extends Model
     use HasApiTokens, HasFactory, Notifiable, HasRoles, HasPanelShield;
 
     /**
-     * Get the user that owns the phone.
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'surname',
+        'phone',
+        'phone_alt',
+        'email',
+        'address',
+        'id_number',
+        'partner',
+        'avatar',
+    ];
+
+    /**
+     * Get the user associated with this profile.
      */
     public function user(): BelongsTo
     {
