@@ -23,8 +23,8 @@ class StatsOverview extends BaseWidget
                 ->description($this->users('riders') . ' Total Riders')
                 ->descriptionIcon('heroicon-m-users')
                 ->color('primary'),
-            Stat::make('bookings', '192.1k')
-                ->label('Bookings made')
+            Stat::make('bookings', '0')
+                ->label('Rides booked')
                 ->description('Next ride: 05/02/2024 - 06:30')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->color('primary'),
