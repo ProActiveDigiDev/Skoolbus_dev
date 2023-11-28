@@ -18,15 +18,15 @@ class StatsOverview extends BaseWidget
                 ->description($this->getNextRide())
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('primary'),
-            Stat::make('riders', $this->users('riders'))
+            Stat::make('riders', $this->getRiders('count'))
                 ->label('Riders registered')
-                ->description($this->users('riders') . ' Total Riders')
+                ->description($this->getRiders('names'))
                 ->descriptionIcon('heroicon-m-users')
                 ->color('primary'),
             Stat::make('bookings', '0')
                 ->label('Rides booked')
                 ->description('Next ride: 05/02/2024 - 06:30')
-                ->descriptionIcon('heroicon-m-arrow-trending-up')
+                ->descriptionIcon('heroicon-m-bell-alert')
                 ->color('primary'),
         ];
     }
@@ -52,25 +52,24 @@ class StatsOverview extends BaseWidget
         return $busArrival;
     }
 
-    public function users($type){
-        if($type == 'total'){
-            //count the total number of users from User model
-            $users = \App\Models\User::count();
-            return $users;
+    public function getRiders($type){
+        if($type == 'names'){
+            //Get the total number of rider from Rider model with user_id as current user
+            $riders = \App\Models\Rider::where('user_id', auth()->user()->id)->get();
+            $names = '';
+            foreach($riders as $rider){
+                $names .= $rider->name . ', ';
+            }
+            return $names;
         }
-
-        if($type == 'parents'){
-            //count the total number of users from User model with role of parent_user
-            // $users = \App\Models\User::where('role', 'parent_user')->count();
-            return "33"; //$users;
-        }
-
         
-        if($type == 'riders'){
-            //count the total number of users from User model with role of rider_user
-            // $users = \App\Models\User::where('role', 'rider_user')->count();
-            return "2"; //$users;
+        if($type == 'count'){
+            //Get the total number of rider from Rider model with user_id as current user
+            $riders = \App\Models\Rider::where('user_id', auth()->user()->id)->count();
+            return $riders;
         }
+
+        return 'Error';
     }
 
     public function getColor(){

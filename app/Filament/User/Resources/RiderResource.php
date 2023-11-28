@@ -76,7 +76,8 @@ class RiderResource extends Resource
                     Grid::make()
                     ->schema([
                         TextInput::make('name')
-                            ->maxLength(191),
+                            ->maxLength(191)
+                            ->required(),
                         TextInput::make('surname')
                             ->maxLength(191)
                     ])->columnSpan(1)->columns(1),

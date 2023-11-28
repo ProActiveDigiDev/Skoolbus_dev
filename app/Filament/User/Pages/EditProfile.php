@@ -200,7 +200,7 @@ class editProfile extends Page implements HasForms
         $userProfile->phone_alt = $profileFormState['phone_alt'];
         $userProfile->address = $profileFormState['address'];
         $userProfile->avatar = $profileFormState['avatar'];
-        $this->removeCurrentImage($userProfile->avatar);
+        $this->removeCurrentImage();
         $userProfile->save();
 
         //TODO: check if user has a rider profile else create record
@@ -209,9 +209,9 @@ class editProfile extends Page implements HasForms
         $this->profileForm->fill($profileFormState);        
     }
 
-    public function removeCurrentImage($imgUrl)
+    public function removeCurrentImage()
     {  
-        // $imgUrl = UserProfile::where('user_id', auth()->user()->id)->first()->avatar;
+        $imgUrl = UserProfile::where('user_id', auth()->user()->id)->first()->avatar;
         if($imgUrl){
             Storage::disk('useravatar')->delete($imgUrl);
             return true;
