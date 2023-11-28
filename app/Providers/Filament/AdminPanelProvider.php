@@ -37,7 +37,6 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->passwordReset()
             ->userMenuItems([
-                'profile' => MenuItem::make()->url(fn (): string => EditProfile::getUrl()),
                 MenuItem::make()
                 ->label('Go to Busstop')
                 ->url('/Busstop')

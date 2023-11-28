@@ -20,7 +20,7 @@ use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class editProfile extends Page implements HasForms
 {
-    use InteractsWithForms, HasPageShield;
+    use InteractsWithForms;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-circle';
 
@@ -186,24 +186,32 @@ class editProfile extends Page implements HasForms
     {
         $profileFormState = $this->profileForm->getState();
 
-        $user = UserProfile::where('user_id', auth()->user()->id)->first();
-        $user->name = $profileFormState['name'];
-        $user->surname = $profileFormState['surname'];
-        $user->id_number = $profileFormState['id_number'];
-        $user->email = $profileFormState['email'];
-        $user->phone = $profileFormState['phone'];
-        $user->phone_alt = $profileFormState['phone_alt'];
-        $user->address = $profileFormState['address'];
-        $user->avatar = $profileFormState['avatar'];
-        $this->removeCurrentImage();
-        $user->save();
+        //check if user has a profile else create record
+        $userProfile = UserProfile::where('user_id', auth()->user()->id)->first();
+        if(!$userProfile){
+            $userProfile = new UserProfile();
+            $userProfile->user_id = auth()->user()->id;
+        }
+        $userProfile->name = $profileFormState['name'];
+        $userProfile->surname = $profileFormState['surname'];
+        $userProfile->id_number = $profileFormState['id_number'];
+        $userProfile->email = $profileFormState['email'];
+        $userProfile->phone = $profileFormState['phone'];
+        $userProfile->phone_alt = $profileFormState['phone_alt'];
+        $userProfile->address = $profileFormState['address'];
+        $userProfile->avatar = $profileFormState['avatar'];
+        $this->removeCurrentImage($userProfile->avatar);
+        $userProfile->save();
+
+        //TODO: check if user has a rider profile else create record
+        //TODO: fix bugs on above todo
 
         $this->profileForm->fill($profileFormState);        
     }
 
-    public function removeCurrentImage()
+    public function removeCurrentImage($imgUrl)
     {  
-        $imgUrl = UserProfile::where('user_id', auth()->user()->id)->first()->avatar;
+        // $imgUrl = UserProfile::where('user_id', auth()->user()->id)->first()->avatar;
         if($imgUrl){
             Storage::disk('useravatar')->delete($imgUrl);
             return true;
@@ -219,7 +227,5 @@ class editProfile extends Page implements HasForms
         return true;
     }
 }
-
-
 
 
