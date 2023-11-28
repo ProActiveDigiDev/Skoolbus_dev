@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Panel;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Traits\HasRoles;
 use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Notifications\Notifiable;
@@ -86,13 +87,32 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         $panelId = $panel->getID();
         $access = true;
 
-        // if($panelId === 'admin'){
-        //     $access = $this->hasRole('admin') || $this->hasRole('super_admin');
-        // }else if($panelId === 'Busstop'){
-        //     $access = $this->getRoleNames()->isNotEmpty(); // && $this->hasVerifiedEmail();
-        //     $access = true;
-        // }
+        if($panelId === 'admin'){
+            $access = $this->hasRole('admin') || $this->hasRole('super_admin');
+        }else if($panelId === 'Busstop'){
+            $access = $this->getRoleNames()->isNotEmpty(); // && $this->hasVerifiedEmail();
+            $access = true;
+        }
 
         return $access;
+    }
+
+    protected static function booted(): void
+    {
+        static::created(function (User $user) {
+            //get the last user id
+            $last_user_id = User::latest()->first()->id;
+            //get id from roles tabel where name is parent_user
+            $parent_user_id = \Spatie\Permission\Models\Role::where('name', 'parent_user')->value('id');
+            //set $last_user_id to 'model_id' and $parent_user_id to 'role_id' in model_has_roles table
+            DB::table('model_has_roles')->insert([
+                'role_id' => $parent_user_id,
+                'model_type' => 'App\Models\User',
+                'model_id' => $last_user_id,
+            ]);
+
+        });
+
+
     }
 }
