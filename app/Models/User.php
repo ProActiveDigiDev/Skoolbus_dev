@@ -11,6 +11,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 
@@ -56,6 +57,14 @@ class User extends Authenticatable implements FilamentUser
     public function user_profile(): HasOne
     {
         return $this->hasOne(UserProfile::class);
+    }
+
+    /**
+     * Get all the riders profiles associated with the user.
+     */
+    public function rider_profile(): HasMany
+    {
+        return $this->hasMany(Rider::class);
     }
 
     public function canAccessPanel(Panel $panel): bool
