@@ -88,10 +88,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         $access = true;
 
         if($panelId === 'admin'){
-            $access = $this->hasRole('admin') || $this->hasRole('super_admin');
+            $access = $this->hasRole('admin_user') || $this->hasRole('super_admin');
         }else if($panelId === 'Busstop'){
-            $access = $this->getRoleNames()->isNotEmpty(); // && $this->hasVerifiedEmail();
-            $access = true;
+            $access = $this->getRoleNames()->isNotEmpty();// && $this->hasVerifiedEmail();
         }
 
         return $access;
