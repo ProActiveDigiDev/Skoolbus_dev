@@ -52,7 +52,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
+            ->discoverResources(app_path('Filament/User/Resources'), 'App\\Filament\\User\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
+            ->discoverPages(app_path('Filament/User/Pages'), 'App\\Filament\\User\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
