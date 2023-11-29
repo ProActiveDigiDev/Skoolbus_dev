@@ -46,12 +46,11 @@ class RiderResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        //check if user is super_admin
-        if(auth()->user()->hasRole('super_admin')){
-            //get all riders
+        $panelId = filament()->getCurrentPanel()->getID();
+
+        if($panelId === 'admin'){
             return parent::getEloquentQuery();
-        }else{
-            //get only riders from the current user
+        }else if($panelId === 'Busstop'){
             return parent::getEloquentQuery()->where('user_id', auth()->user()->id);
         }
     }
