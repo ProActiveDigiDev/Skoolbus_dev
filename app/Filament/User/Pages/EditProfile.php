@@ -211,7 +211,7 @@ class editProfile extends Page implements HasForms
 
     public function removeCurrentImage()
     {  
-        $imgUrl = UserProfile::where('user_id', auth()->user()->id)->first()->avatar;
+        $imgUrl = UserProfile::where('user_id', auth()->user()->id)->first()->avatar ?? null;
         if($imgUrl){
             Storage::disk('useravatar')->delete($imgUrl);
             return true;

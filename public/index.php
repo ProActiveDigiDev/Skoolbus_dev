@@ -3,6 +3,14 @@
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
+error_reporting(E_ALL);
+
+
+$hetznerUsername = 'skoolywget';
+$dir = '/usr/home/' . $hetznerUsername;
+$xneelo_usr = strpos($_SERVER['DOCUMENT_ROOT'], $hetznerUsername);
+
+
 define('LARAVEL_START', microtime(true));
 
 /*
@@ -16,9 +24,18 @@ define('LARAVEL_START', microtime(true));
 |
 */
 
-if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
-    require $maintenance;
+
+if($xneelo_usr !== false){
+  
+  if (file_exists($maintenance = $dir . '/storage/framework/maintenance.php')) {
+        require $maintenance;
+    }
+} else {
+    if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
+        require $maintenance;
+    }
 }
+
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +48,15 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
 |
 */
 
-require __DIR__.'/../vendor/autoload.php';
+
+if($xneelo_usr !== false) { // Detect if we are running on xneelo (formerly Hetzner) environment
+    require $dir . '/vendor/autoload.php';
+
+} else {
+    require __DIR__ . '/../vendor/autoload.php';
+}
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -44,7 +69,23 @@ require __DIR__.'/../vendor/autoload.php';
 |
 */
 
-$app = require_once __DIR__.'/../bootstrap/app.php';
+
+if($xneelo_usr !== false) { // Detect if we are running on xneelo (formerly Hetzner) environment
+    $app = require_once $dir . '/bootstrap/app.php';
+
+    $app->bind('path.public', function() {
+        return __DIR__.'/public_html'; // This is the path to the public_html folder on xneelo
+    });
+
+} else { // Default to local environment
+    $app = require_once __DIR__.'/../bootstrap/app.php';
+
+    $app->bind('path.public', function() {
+        return __DIR__.'/'; // This is the path to the public folder on local
+    });
+}
+
+
 
 $kernel = $app->make(Kernel::class);
 
@@ -53,3 +94,6 @@ $response = $kernel->handle(
 )->send();
 
 $kernel->terminate($request, $response);
+
+
+

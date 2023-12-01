@@ -13,11 +13,12 @@ use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use BezhanSalleh\FilamentShield\Traits\HasPanelShield;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 
-class User extends Authenticatable implements FilamentUser, HasAvatar
+class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles, HasPanelShield;
 
@@ -88,10 +89,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         $access = true;
 
         if($panelId === 'admin'){
-            $access = $this->hasRole('admin') || $this->hasRole('super_admin');
+            $access = $this->hasRole('admin_user') || $this->hasRole('super_admin');
         }else if($panelId === 'Busstop'){
-            $access = $this->getRoleNames()->isNotEmpty(); // && $this->hasVerifiedEmail();
-            $access = true;
+            $access = $this->getRoleNames()->isNotEmpty();// && $this->hasVerifiedEmail();
         }
 
         return $access;
@@ -116,3 +116,5 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
 
     }
 }
+
+
