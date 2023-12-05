@@ -14,9 +14,6 @@ use Illuminate\Support\Facades\Redirect;
 |
 */
 
-// Route::get('/', function () {
-//     return view('busstop_welcome');
-// });
 Route::get('/', function () {
     return Redirect::to('/Busstop');
 });
