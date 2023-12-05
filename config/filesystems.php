@@ -38,7 +38,7 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
+            'root' => public_path(),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw' => false,
@@ -58,7 +58,8 @@ return [
 
         'useravatar' => [
             'driver' => 'local',
-            'root' => storage_path('app/public/user_avatars'),
+            // 'root' => public_path('storage/user_avatars'),
+            'root' => base_path('public_html/storage/user_avatars'), // Update the root path
             'url' => env('APP_URL').'/storage/user_avatars',
             'visibility' => 'public',
             'throw' => false,
