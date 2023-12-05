@@ -58,7 +58,6 @@ return [
 
         'useravatar' => [
             'driver' => 'local',
-            // 'root' => public_path('storage/user_avatars'),
             'root' => base_path('public_html/storage/user_avatars'), // Update the root path
             'url' => env('APP_URL').'/storage/user_avatars',
             'visibility' => 'public',

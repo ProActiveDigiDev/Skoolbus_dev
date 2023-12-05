@@ -29,6 +29,18 @@ class UserResource extends Resource
         return 'User Management';
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        //show only users that has not role super_admin unless the current user is super_admin
+        if(auth()->user()->hasRole('super_admin')){
+            return parent::getEloquentQuery();
+        }else{
+            return parent::getEloquentQuery()->whereDoesntHave('roles', function($query){
+                $query->where('name', 'super_admin');
+            });
+        }
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -45,7 +57,8 @@ class UserResource extends Resource
                     ->dehydrated(fn ($state) => filled($state))
                     ->required(fn (string $context): bool => $context === 'create'),
                 Select::make('roles')
-                    ->relationship('roles', 'name')
+                    ->relationship('roles', 'name', 
+                    fn (Builder $query) => $query->whereNot('name', 'super_admin')->whereNot('name', 'panel_user'))
                     ->multiple()
                     ->preload()
                     ->searchable(),
