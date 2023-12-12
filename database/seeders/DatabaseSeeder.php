@@ -25,7 +25,8 @@ class DatabaseSeeder extends Seeder
         $adminRole = Role::create(['name' => 'Admin']);
         
         $this->call(
-            UserProfileSeeder::class
+            UserProfileSeeder::class,
+            WebsiteConfigsSeeder::class
         );
     }
 }
