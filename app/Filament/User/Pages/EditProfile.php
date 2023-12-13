@@ -28,12 +28,9 @@ class editProfile extends Page implements HasForms
 
     protected static ?string $navigationLabel = 'My Profile';
 
-    protected static ?string $title = 'My Profile';
+    protected static ?string $navigationGroup = 'User Management';
 
-    public static function getNavigationGroup(): ?string
-    {
-        return 'User Management';
-    }
+    protected static ?string $title = 'My Profile';
 
     public ?array $accountData = [];
     public ?array $profileData = [];

@@ -35,6 +35,8 @@ class Settings extends Page implements HasForms
 
     protected static ?string $navigationLabel = 'Website Configs';
 
+    protected static ?string $navigationGroup = 'Website Management';
+
     protected static ?string $modelLabel = 'Website Configurations';
 
     public ?array $data = [];

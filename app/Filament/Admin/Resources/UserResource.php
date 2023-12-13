@@ -24,10 +24,8 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    public static function getNavigationGroup(): ?string
-    {
-        return 'User Management';
-    }
+    protected static ?string $navigationGroup = 'User Management';
+
 
     public static function getEloquentQuery(): Builder
     {

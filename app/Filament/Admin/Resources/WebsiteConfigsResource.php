@@ -22,6 +22,8 @@ class WebsiteConfigsResource extends Resource
 
     protected static ?string $navigationLabel = 'Website Configs (Admin)';
 
+    protected static ?string $navigationGroup = 'Website Management';
+    
     protected static ?string $modelLabel = 'Website Settings';
 
 
