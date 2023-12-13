@@ -9,6 +9,7 @@ use Filament\PanelProvider;
 use Filament\Pages\Dashboard;
 use Filament\Navigation\MenuItem;
 use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\DB;
 use Filament\Widgets\AccountWidget;
 use Filament\Navigation\NavigationItem;
 use App\Filament\Resources\UserResource;
@@ -30,6 +31,13 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        $websiteConfigs = DB::table('website_configs')
+        ->select('var_name', 'var_value')
+        ->get()
+        ->pluck('var_value', 'var_name')
+        ->toArray();
+        
+
         return $panel
             ->default()
             ->id('admin')
@@ -42,13 +50,15 @@ class AdminPanelProvider extends PanelProvider
                 ->url('/Busstop')
                 ->icon('heroicon-o-arrow-down-on-square-stack'),
             ])
-            ->brandName('Skoolbus')
+            ->brandName($websiteConfigs['site_name'])
             ->brandLogo(asset('storage/branding/logo.png'))
             ->darkModeBrandLogo(asset('storage/branding/logo_dark.png'))
             ->brandLogoHeight('40px')
             ->favicon(asset('storage/branding/favicon.png'))
+            ->darkMode($websiteConfigs['site_dark_mode'] ?? false)
             ->colors([
-                'primary' => '#fdd219',
+                'primary' =>  $websiteConfigs['site_brand_color_primary'] ?? Color::Amber,
+                'secondary' => $websiteConfigs['site_brand_color_secondary'] ?? Color::Gray,
             ])
             ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
