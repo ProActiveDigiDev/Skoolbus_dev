@@ -56,10 +56,38 @@ return [
             'throw' => false,
         ],
 
+        /* *** Production *** */
+        // 'useravatar' => [
+        //     'driver' => 'local',
+        //     'root' => base_path('public_html/storage/user_avatars'), // Update the root path
+        //     'url' => env('APP_URL').'/storage/user_avatars',
+        //     'visibility' => 'public',
+        //     'throw' => false,
+        // ],
+
+        /* *** Development *** */
         'useravatar' => [
             'driver' => 'local',
-            'root' => base_path('public_html/storage/user_avatars'), // Update the root path
+            'root' => storage_path('app/public/user_avatars'), // Update the root path
             'url' => env('APP_URL').'/storage/user_avatars',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        /* *** Production *** */
+        // 'branding' => [
+        //     'driver' => 'local',
+        //     'root' => base_path('public_html/storage/branding'), // Update the root path
+        //     'url' => env('APP_URL').'/storage/branding',
+        //     'visibility' => 'public',
+        //     'throw' => false,
+        // ],
+
+        /* *** Development *** */
+        'branding' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/branding'), // Update the root path
+            'url' => env('APP_URL').'/storage/branding',
             'visibility' => 'public',
             'throw' => false,
         ],
