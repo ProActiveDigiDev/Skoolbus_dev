@@ -51,7 +51,7 @@ class Settings extends Page implements HasForms
                     ->tabs([
                         Tabs\Tab::make('Information')
                             ->schema([
-                                Section::make('Information')
+                                Section::make('Website Info')
                                 ->description('Basic Website Information.')
                                 ->schema([
                                     TextInput::make('site_name')
@@ -63,12 +63,50 @@ class Settings extends Page implements HasForms
                                     ->helperText('Your company Tag Line or Slogan.'),
                     
                                     MarkdownEditor::make('site_description')
+                                    ->toolbarButtons([
+                                        'blockquote',
+                                        'bulletList',
+                                        'heading',
+                                        'bold',
+                                        'italic',
+                                        'strike',
+                                        'link',
+                                        'orderedList',
+                                        'redo',
+                                        'undo',
+                                    ])
                                     ->helperText('A short description of your website.')
                                     ->columnSpan(2),
                                 ])
                                 ->columns(2)
                                 ->columnSpan(1),
-                            ]),
+
+                                Section::make('Contact Information')
+                                ->description('Your business contact info.')
+                                ->schema([
+                                    TextInput::make('site_contact_nr')
+                                    ->label('Contact Number')
+                                    ->prefixIcon('heroicon-o-phone')
+                                    ->required(),
+                                    
+                                    TextInput::make('site_contact_nr1')
+                                    ->prefixIcon('heroicon-o-phone')
+                                    ->label('Contact Number (alt)'),
+                                    
+                                    TextInput::make('site_contact_email1')
+                                    ->prefixIcon('heroicon-o-envelope')
+                                    ->label('Contact Email')
+                                    ->required(),
+                                    
+                                    TextInput::make('site_contact_email2')
+                                    ->prefixIcon('heroicon-o-envelope')
+                                    ->label('Contact Email (alt)')
+                                    ->required(),
+                                ])
+                                ->columns(2)
+                                ->columnSpan(1),
+                            ])
+                            ->columns(2),
 
                         Tabs\Tab::make('Branding')
                             ->schema([
@@ -229,6 +267,18 @@ class Settings extends Page implements HasForms
 
         WebsiteConfigs::where('var_name', 'site_description')
         ->update(['var_value' => $this->data['site_description']]);
+
+        WebsiteConfigs::where('var_name', 'site_contact_nr')
+        ->update(['var_value' => $this->data['site_contact_nr']]);
+
+        WebsiteConfigs::where('var_name', 'site_contact_nr1')
+        ->update(['var_value' => $this->data['site_contact_nr1']]);
+
+        WebsiteConfigs::where('var_name', 'site_contact_email1')
+        ->update(['var_value' => $this->data['site_contact_email1']]);
+
+        WebsiteConfigs::where('var_name', 'site_contact_email2')
+        ->update(['var_value' => $this->data['site_contact_email2']]);
 
         WebsiteConfigs::where('var_name', 'site_logo')
         ->update(['var_value' => 'logo.png']);
