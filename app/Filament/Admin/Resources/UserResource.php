@@ -7,11 +7,13 @@ use App\Models\User;
 use Filament\Tables;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Faker\Provider\ar_EG\Text;
 use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\CheckboxList;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -74,6 +76,9 @@ class UserResource extends Resource
                 TextColumn::make('created_at')
                     ->since()
                     ->searchable(),
+                TextColumn::make('rider_profile_count')
+                ->label('Riders')
+                ->counts('rider_profile'),
             ])
             ->filters([
                 //

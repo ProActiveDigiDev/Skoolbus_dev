@@ -1,9 +1,11 @@
 <x-filament-panels::page>
 
-    <form wire:submit.prevent="submit">
+    {{ $this->accountInfolist }}
+
+    {{-- <form wire:submit.prevent="submit">
         @csrf
         {{ $this->accountForm }}
-    </form>
+    </form> --}}
 
     <form wire:submit.prevent="submit">
         @csrf

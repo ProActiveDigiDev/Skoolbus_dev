@@ -7,6 +7,7 @@ use ReflectionClass;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
 use App\Models\UserProfile;
+use Filament\Infolists\Infolist;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Contracts\HasForms;
@@ -14,8 +15,12 @@ use Filament\Forms\Components\Textarea;
 use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Forms\Concerns\InteractsWithForms;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
+use Filament\Infolists\Components\Grid as infolistGrid;
+use Filament\Infolists\Components\Section as infolistSection;
 
 
 class editProfile extends Page implements HasForms
@@ -38,7 +43,7 @@ class editProfile extends Page implements HasForms
     protected function getForms(): array
     {
         return [
-            'accountForm',
+            // 'accountForm',
             'profileForm',
         ];
     }
@@ -46,10 +51,11 @@ class editProfile extends Page implements HasForms
     public function mount(): void
     {
         // abort_unless(auth()->user()->id, 403);
-        $accountData = User::find(auth()->user()->id);
-        if($accountData){
-            $this->accountForm->fill($accountData->toArray(), 'accountForm');
-        }
+        // $accountData = User::find(auth()->user()->id);
+        // if($accountData){
+        //     $this->accountForm->fill($accountData->toArray(), 'accountForm');
+        // }
+
         //get user profile data from user_profile table
         $profileData = UserProfile::where('user_id', auth()->user()->id)->first();
         if($profileData){
@@ -58,37 +64,56 @@ class editProfile extends Page implements HasForms
         
     }
 
-    public function accountForm(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Grid::make(2)
-                ->schema([
-                    Section::make('User Account')
-                    ->description('Basic Account Information.')
-                    ->schema([
-                        TextInput::make('name')
-                        ->label('Username.')
-                        ->autofocus()
-                        ->required()
-                        ->unique()
-                        ->maxLength(255),
 
-                        TextInput::make('email')
-                        ->label('Email address')
-                        ->email()
-                        ->required()
-                        ->unique()
-                        ->maxLength(255),
-                    ])
-                    ->columns(2)
-                    ->columnSpan(1),
-                ])
-                ->columns(1)
+    public function accountInfolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+        ->record(User::find(auth()->user()->id))
+        ->schema([
+            infolistSection::make('')
+            ->schema([
+                TextEntry::make('name')
+                ->label('Username')
+                ->columnSpan(1),
+
+                TextEntry::make('email')
                 ->columnSpan(1),
             ])
-            ->statePath('accountData');
+            ->columns(2)
+        ]);
     }
+
+    // public function accountForm(Form $form): Form
+    // {
+    //     return $form
+    //         ->schema([
+    //             Grid::make(2)
+    //             ->schema([
+    //                 Section::make('User Account')
+    //                 ->description('Basic Account Information.')
+    //                 ->schema([
+    //                     TextInput::make('name')
+    //                     ->label('Username.')
+    //                     ->autofocus()
+    //                     ->required()
+    //                     ->unique()
+    //                     ->maxLength(255),
+
+    //                     TextInput::make('email')
+    //                     ->label('Email address')
+    //                     ->email()
+    //                     ->required()
+    //                     ->unique()
+    //                     ->maxLength(255),
+    //                 ])
+    //                 ->columns(2)
+    //                 ->columnSpan(1),
+    //             ])
+    //             ->columns(1)
+    //             ->columnSpan(1),
+    //         ])
+    //         ->statePath('accountData');
+    // }
 
     public function profileForm(Form $form): Form
     {
