@@ -35,6 +35,8 @@ class Settings extends Page implements HasForms
 
     protected static ?string $navigationLabel = 'Website Configs';
 
+    protected static ?string $navigationGroup = 'Website Management';
+
     protected static ?string $modelLabel = 'Website Configurations';
 
     public ?array $data = [];
@@ -180,7 +182,7 @@ class Settings extends Page implements HasForms
                         Tabs\Tab::make('Social Media')
                             ->schema([
                                 Section::make('Social Media')
-                                ->description('Social Media Links. <br> Insert the full URL to your Social Media Pages.')
+                                ->description('Insert the full URL to your Social Media Pages.')
                                 ->schema([
                                     TextInput::make('site_social_links_facebook')
                                     ->label('Facebook')
@@ -216,6 +218,10 @@ class Settings extends Page implements HasForms
                                 ->numeric()
                                 ->prefix('R')
                                 ->helperText('What is the rate for a single Ride Credit? (in ZAR)'),
+
+                                TextInput::make('ride_max_riders')
+                                ->numeric()
+                                ->helperText('What is the default maximum number of riders allowed on a single ride?'),
                             ])
                             ->columns(4)
                             ->columnSpan(1),
