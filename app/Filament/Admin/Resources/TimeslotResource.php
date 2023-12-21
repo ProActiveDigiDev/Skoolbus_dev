@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Admin\Resources\TimeslotResource\Pages;
 use App\Filament\Admin\Resources\TimeslotResource\RelationManagers;
+use Filament\Forms\Components\Tabs\Tab;
 
 class TimeslotResource extends Resource
 {
@@ -29,6 +30,8 @@ class TimeslotResource extends Resource
 
     public static function form(Form $form): Form
     {
+        abort_unless(auth()->user()->hasRole(['super_admin', 'user_admin']), 403);
+
         return $form
         ->schema([
             Section::make('Timeslot Info')
@@ -86,20 +89,20 @@ class TimeslotResource extends Resource
                     ->columnSpan(2),
                 ])
                 ->columns(2),
-                    ]);
+            ]);
     }
 
     public static function table(Table $table): Table
     {
+        abort_unless(auth()->user()->hasRole(['super_admin', 'user_admin']), 403);
+        
         return $table
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
-                TextColumn::make('description')
-                    ->searchable(),
                 TextColumn::make('departure_time')
                     ->searchable(),
-                TextColumn::make('estimated_time')
+                TextColumn::make('description')
                     ->searchable(),
             ])
             ->filters([
@@ -107,6 +110,7 @@ class TimeslotResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

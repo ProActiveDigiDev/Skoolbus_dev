@@ -30,12 +30,13 @@ class LocationResource extends Resource
 
     public static function form(Form $form): Form
     {
+        abort_unless(auth()->user()->hasRole(['super_admin', 'user_admin']), 403);
+
         return $form
             ->schema([
-                TextInput::make('name')
+                TextInput::make('name') 
                     ->required()
-                    ->maxLength(191)
-                    ->default('Destination'),
+                    ->maxLength(191),
                 TextInput::make('description')
                     ->maxLength(191),
 
@@ -64,6 +65,7 @@ class LocationResource extends Resource
                     
                     TextInput::make('location')
                         ->helperText('Google Maps Location')
+                        ->url()
                         ->maxLength(191)
                         ->required()
                         ->columnSpan(2),
@@ -73,6 +75,7 @@ class LocationResource extends Resource
 
     public static function table(Table $table): Table
     {
+        abort_unless(auth()->user()->hasRole(['super_admin', 'user_admin']), 403);
         return $table
             ->columns([
                 TextColumn::make('name')
