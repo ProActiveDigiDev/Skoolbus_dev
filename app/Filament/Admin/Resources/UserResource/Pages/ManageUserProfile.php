@@ -1,47 +1,45 @@
 <?php
 
-namespace App\Filament\User\Pages;
+namespace App\Filament\Admin\Resources\UserResource\Pages;
 
-use App\Models\User;
-use ReflectionClass;
-use Filament\Forms\Get;
+use App\Models\Rider;
 use Filament\Forms\Form;
-use Filament\Pages\Page;
 use App\Models\UserProfile;
 use App\Models\EmergencyContact;
 use Filament\Infolists\Infolist;
+use Filament\Resources\Pages\Page;
 use Filament\Forms\Components\Grid;
 use App\Models\EmergencyInformation;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\Textarea;
 use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\ImageEntry;
+use Illuminate\Database\Eloquent\Collection;
+use App\Filament\Admin\Resources\UserResource;
+use App\Filament\User\Resources\RiderResource;
 use Filament\Forms\Concerns\InteractsWithForms;
-use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Infolists\Components\Grid as infolistGrid;
+use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Infolists\Components\Section as infolistSection;
 
 
-class editProfile extends Page implements HasForms
+class ManageUserProfile extends Page
 {
-    use InteractsWithForms;
+    use InteractsWithForms, InteractsWithRecord;
+    
+    protected static string $resource = UserResource::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
+    protected static string $view = 'filament.admin.resources.user-resource.pages.manage-user-profile';
 
-    protected static string $view = 'filament.user.pages.edit-profile';
-
-    protected static ?string $navigationLabel = 'My Profile';
-
-    protected static ?string $navigationGroup = 'User Management';
-
-    protected static ?string $title = 'My Profile';
+    protected int $recordUser;
 
     public ?string $activeTab = 'tab_1'; // Put your default tab here
+
+    public ?array $riders = [];
 
     public ?array $profileData = [];
     public ?array $emergencyInformationData = [];
@@ -56,28 +54,34 @@ class editProfile extends Page implements HasForms
         ];
     }
 
-    public function mount(): void
+    public function mount(int | string $record): void
     {
         abort_unless(auth()->user()->id, 403);
 
+        $this->record = $this->resolveRecord($record);
+ 
+        static::authorizeResourceAccess();
+
         //get user profile data from user_profile table
-        $profileData = UserProfile::where('user_id', auth()->user()->id)->first();
+        $profileData = UserProfile::where('user_id', $this->record->id)->first();
         if($profileData){
             $this->profileForm->fill($profileData->toArray(), 'profileForm');
         }
 
         //get user emergency information data from emergency_information table
-        $emergencyInformationData = EmergencyInformation::where('user_id', auth()->user()->id)->first();
+        $emergencyInformationData = EmergencyInformation::where('user_id', $this->record->id)->first();
         if($emergencyInformationData){
             $this->emergencyInformationForm->fill($emergencyInformationData->toArray(), 'emergencyInformationForm');
         }
 
         //get user emergency contact data from emergency_contact table
-        $emergencyContactData = EmergencyContact::where('user_id', auth()->user()->id)->first();
+        $emergencyContactData = EmergencyContact::where('user_id', $this->record->id)->first();
         if($emergencyContactData){
             $this->emergencyContactForm->fill($emergencyContactData->toArray(), 'emergencyContactForm');
         }
         
+        //get all riders profiles associated with the user
+        $this->riders = $this->riderData();
     }
 
 
@@ -85,7 +89,7 @@ class editProfile extends Page implements HasForms
     public function accountInfolist(Infolist $infolist): Infolist
     {
         return $infolist
-        ->record(User::find(auth()->user()->id))
+        ->record($this->record)
         ->schema([
             infolistSection::make('')
             ->schema([
@@ -123,7 +127,6 @@ class editProfile extends Page implements HasForms
                 ->schema([
                     TextInput::make('name')
                     ->autofocus()
-                    ->required()
                     ->maxLength(255),
 
                     TextInput::make('surname')
@@ -141,8 +144,7 @@ class editProfile extends Page implements HasForms
                 ->schema([
                     TextInput::make('phone')
                     ->label('Phone number')
-                    ->tel()
-                    ->required(),
+                    ->tel(),
             
                     TextInput::make('phone_alt')
                     ->label('Phone number (w)')
@@ -174,11 +176,9 @@ class editProfile extends Page implements HasForms
         ->schema([
             Section::make('Medical Aid Information')
             ->schema([
-                Toggle::make('has_medical_aid')
-                ->live(),
+                Toggle::make('has_medical_aid'),
 
                 Grid::make()
-                ->hidden(fn (?array $state) => !($state && $state['has_medical_aid']))
                 ->schema([
                     TextInput::make('medical_aid_name')
                     ->label('Medical Aid Name')
@@ -253,15 +253,31 @@ class editProfile extends Page implements HasForms
         ->model(EmergencyContact::class);
     }
 
+    public function riderData()
+    {
+        //get all riders profiles associated with the user
+        $ridersCollection = Rider::where('user_id', $this->record->id)->get();
+
+        //get all riders ids and names associated with the user
+        $riders = [];
+        foreach ($ridersCollection as $rider) {
+            $riderObj = (object) [
+                'id' => $rider->id,
+                'name' => $rider->name,
+            ];
+            $riders[] = $riderObj;
+        }
+
+        return $riders;
+    }
+
     
     /* Form submit functions */
     public function submit()
     {
         $this->profileFormSubmit();
         $this->emergencyInformationFormSubmit();
-        $this->emergencyContactFormSubmit();
-
-        $this->redirect('/Busstop/edit-profile');  
+        $this->emergencyContactFormSubmit(); 
     }
 
     public function profileFormSubmit()
@@ -269,10 +285,10 @@ class editProfile extends Page implements HasForms
         $profileFormState = $this->profileForm->getState();
 
         //check if user has a profile else create record
-        $userProfile = UserProfile::where('user_id', auth()->user()->id)->first();
+        $userProfile = UserProfile::where('user_id', $this->record->id)->first();
         if(!$userProfile){
             $userProfile = new UserProfile();
-            $userProfile->user_id = auth()->user()->id;
+            $userProfile->user_id = $this->record->id;
         }
         $userProfile->name = $profileFormState['name'];
         $userProfile->surname = $profileFormState['surname'];
@@ -292,10 +308,10 @@ class editProfile extends Page implements HasForms
         $emergencyInformationFormState = $this->emergencyInformationForm->getState();
 
         //check if user has a emergency information else create record
-        $emergencyInformation = EmergencyInformation::where('user_id', auth()->user()->id)->first();
+        $emergencyInformation = EmergencyInformation::where('user_id', $this->record->id)->first();
         if(!$emergencyInformation){
             $emergencyInformation = new EmergencyInformation();
-            $emergencyInformation->user_id = auth()->user()->id;
+            $emergencyInformation->user_id = $this->record->id;
         }
         $emergencyInformation->has_medical_aid = $emergencyInformationFormState['has_medical_aid'];
         $emergencyInformation->medical_aid_name = $emergencyInformationFormState['medical_aid_name'] ?? null;
@@ -312,10 +328,10 @@ class editProfile extends Page implements HasForms
         $emergencyContactFormState = $this->emergencyContactForm->getState();
 
         //check if user has a emergency contact else create record
-        $emergencyContact = EmergencyContact::where('user_id', auth()->user()->id)->first();
+        $emergencyContact = EmergencyContact::where('user_id', $this->record->id)->first();
         if(!$emergencyContact){
             $emergencyContact = new EmergencyContact();
-            $emergencyContact->user_id = auth()->user()->id;
+            $emergencyContact->user_id = $this->record->id;
         }
         $emergencyContact->ec_name = $emergencyContactFormState['ec_name'];
         $emergencyContact->ec_surname = $emergencyContactFormState['ec_surname'];
@@ -330,7 +346,7 @@ class editProfile extends Page implements HasForms
     /* Additional functions */
     public function removeCurrentImage()
     {  
-        $imgUrl = UserProfile::where('user_id', auth()->user()->id)->first()->avatar ?? null;
+        $imgUrl = UserProfile::where('user_id', $this->record->id)->first()->avatar ?? null;
         if($imgUrl){
             Storage::disk('useravatar')->delete($imgUrl);
             return true;
@@ -338,12 +354,6 @@ class editProfile extends Page implements HasForms
         }else{
             return false;
         }
-    }
-    
-    public static function shouldRegisterNavigation(): bool
-    {
-        // return auth()->user()->hasRole(['Admin', 'Owner', 'Parent', 'Driver']);
-        return true;
     }
 }
 

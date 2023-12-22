@@ -12,6 +12,7 @@ use Filament\Resources\Resource;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Database\Eloquent\Builder;
@@ -92,7 +93,11 @@ class UserResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->recordUrl(
+                //redirect to manage user profile page for this record
+                fn(Model $record): string => route('filament.admin.resources.users.manage_user_profile', $record)
+            );
     }
 
     public static function getRelations(): array
@@ -108,6 +113,7 @@ class UserResource extends Resource
             'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
+            'manage_user_profile' => Pages\ManageUserProfile::route('/{record}/manage_user_profile'),
         ];
     }
 }
