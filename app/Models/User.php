@@ -76,6 +76,22 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     }
 
     /**
+     * Get the user emergency information associated with the user.
+     */
+    public function user_emergency_information(): HasOne
+    {
+        return $this->hasOne(EmergencyInformation::class);
+    }
+
+    /**
+     * Get the user emergency information associated with the user.
+     */
+    public function user_emergency_contact(): HasMany
+    {
+        return $this->hasMany(EmergencyContact::class);
+    }
+
+    /**
      * Get all the riders profiles associated with the user.
      */
     public function rider_profile(): HasMany
