@@ -38,7 +38,7 @@
             </x-filament::tabs.item>
 
             <div class="flex justify-end">
-                <x-filament::button wire:click="submit" outlined>
+                <x-filament::button wire:click="submit">
                     Save Changes
                 </x-filament::button>
             </div>
@@ -72,12 +72,38 @@
                 </form> 
             </div>
 
-            <div x-show="activeTab == 'tab_5'">
-                @foreach($this->riders as $rider)
-                    <a href="/filament/resources/riders/{{ $rider->id }}/edit" class="fi-btn-label">
-                        Edit {{ $rider->name }} (ID: {{ $rider->id }})
-                    </a>
-                @endforeach 
+            <div x-show="activeTab == 'tab_5'">   
+                <x-filament::section>
+                
+                    @if(!$this->riders)
+                        <div class="flex justify-center">
+                            <h3>No Riders Found</h3>
+                        </div>
+                    @endif
+    
+                    <x-filament::modal>
+                        <x-slot name="trigger">
+                            @foreach($this->riders as $rider)
+                                <x-filament::button wire:click="riderFormFill({{ $rider->id }})" outlined>
+                                    {{ $rider->name }} (ID: {{ $rider->id }})
+                                </x-filament::button>
+                            @endforeach
+                        </x-slot>
+                            
+                        {{-- Modal content --}}
+                        <div>
+                            <form wire:submit.prevent="riderFormSubmit">
+                                {{ $this->riderForm  }}
+                                
+                                
+                                <x-filament::button class="mt-3" type="submit" outlined>
+                                    Save
+                                    <x-filament::loading-indicator wire:loading class="h-5 w-5" />
+                                </x-filament::button>
+                            </form>
+                        </div>
+                    </x-filament::modal>
+                </x-filament::section>          
             </div>
 
         </div>

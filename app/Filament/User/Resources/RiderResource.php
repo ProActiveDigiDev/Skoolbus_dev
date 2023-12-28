@@ -46,8 +46,10 @@ class RiderResource extends Resource
         $panelId = filament()->getCurrentPanel()->getID();
 
         if($panelId === 'admin'){
+            //If admin user show all riders
             return parent::getEloquentQuery();
         }else if($panelId === 'Busstop'){
+            //If Busstop user show only riders that are assigned to the current user
             return parent::getEloquentQuery()->where('user_id', auth()->user()->id);
         }
     }

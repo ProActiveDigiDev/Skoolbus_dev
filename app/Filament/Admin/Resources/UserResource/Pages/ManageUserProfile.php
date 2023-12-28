@@ -12,22 +12,21 @@ use Filament\Forms\Components\Grid;
 use App\Models\EmergencyInformation;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\Textarea;
 use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Infolists\Components\TextEntry;
-use Illuminate\Database\Eloquent\Collection;
 use App\Filament\Admin\Resources\UserResource;
 use App\Filament\User\Resources\RiderResource;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Infolists\Components\Grid as infolistGrid;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Infolists\Components\Section as infolistSection;
 
 
-class ManageUserProfile extends Page
+class ManageUserProfile extends Page implements HasForms
 {
     use InteractsWithForms, InteractsWithRecord;
     
@@ -40,10 +39,12 @@ class ManageUserProfile extends Page
     public ?string $activeTab = 'tab_1'; // Put your default tab here
 
     public ?array $riders = [];
+    public ?int $selectedRiderId;
 
     public ?array $profileData = [];
     public ?array $emergencyInformationData = [];
     public ?array $emergencyContactData = [];
+    public ?array $riderData = [];
 
     protected function getForms(): array
     {
@@ -51,6 +52,7 @@ class ManageUserProfile extends Page
             'profileForm',
             'emergencyInformationForm',
             'emergencyContactForm',
+            'riderForm'
         ];
     }
 
@@ -82,6 +84,7 @@ class ManageUserProfile extends Page
         
         //get all riders profiles associated with the user
         $this->riders = $this->riderData();
+
     }
 
 
@@ -253,22 +256,50 @@ class ManageUserProfile extends Page
         ->model(EmergencyContact::class);
     }
 
-    public function riderData()
+    public static function riderForm(Form $form): Form
     {
-        //get all riders profiles associated with the user
-        $ridersCollection = Rider::where('user_id', $this->record->id)->get();
-
-        //get all riders ids and names associated with the user
-        $riders = [];
-        foreach ($ridersCollection as $rider) {
-            $riderObj = (object) [
-                'id' => $rider->id,
-                'name' => $rider->name,
-            ];
-            $riders[] = $riderObj;
-        }
-
-        return $riders;
+        return $form
+        ->schema([
+            Grid::make()
+            ->schema([
+                Grid::make()
+                ->schema([
+                    FileUpload::make('avatar')
+                        ->label('Profile Picture')
+                        ->helperText('This Image will be used to identify the rider before getting on Skoolbus.')
+                        ->image()
+                        ->imageEditor()
+                        ->avatar()
+                        ->disk('useravatar')
+                        ->columnSpan(1)
+                        ->extraAttributes(['width' => 200, 'height' => 200, 'style' => 'margin:auto;']),
+                    Grid::make()
+                    ->schema([
+                        TextInput::make('name')
+                            ->maxLength(191)
+                            ->required(),
+                        TextInput::make('surname')
+                            ->maxLength(191)
+                    ])->columnSpan(1)->columns(1),
+                ])
+                ->columns(2),
+                TextInput::make('id_number')
+                    ->label('ID Number')
+                    ->helperText("If applicable")
+                    ->maxLength(191),
+                DatePicker::make('birthday')
+                    ->format('d/M/Y')
+                    ->displayFormat('d/M/Y')
+                    ->native(false),
+                TextInput::make('phone')
+                    ->tel()
+                    ->maxLength(191),
+                TextInput::make('school')
+                    ->maxLength(191),                        
+            ]),
+        ])
+        ->statePath('riderData')
+        ->model(Rider::class);
     }
 
     
@@ -343,7 +374,59 @@ class ManageUserProfile extends Page
         $this->emergencyContactForm->fill($emergencyContactFormState);
     }
 
+    public function riderFormSubmit()
+    {
+        // Retrieve the selected rider ID and $this->riderFormData to perform necessary actions
+        $riderId = $this->selectedRiderId;
+        $riderFormState = $this->riderForm->getState();
+
+        $rider = Rider::find($riderId);
+        if ($rider) {
+            $rider->avatar = $riderFormState['avatar']; 
+            $rider->name = $riderFormState['name'];
+            $rider->surname = $riderFormState['surname'];
+            $rider->id_number = $riderFormState['id_number'];
+            $rider->birthday = $riderFormState['birthday'];
+            $rider->phone = $riderFormState['phone'];
+            $rider->school = $riderFormState['school'];
+            $rider->save();
+        }
+
+        $this->riderForm->fill($riderFormState);
+    }
+
     /* Additional functions */
+
+    public function riderData()
+    {
+        //get all riders profiles associated with the user
+        $ridersCollection = Rider::where('user_id', $this->record->id)->get();
+
+        //get all riders ids and names associated with the user
+        $riders = [];
+        foreach ($ridersCollection as $rider) {
+            $riderObj = (object) [
+                'id' => $rider->id,
+                'name' => $rider->name,
+            ];
+            $riders[] = $riderObj;
+        }
+
+        return $riders;
+    }
+
+    public function riderFormFill($riderId)
+    {        
+        // Store the selected rider ID
+        $this->selectedRiderId = $riderId;
+
+        //get rider data from rider table
+        $riderData = Rider::find($riderId);
+        if($riderData){
+            $this->riderForm->fill($riderData->toArray(), 'riderForm');
+        }
+    }
+
     public function removeCurrentImage()
     {  
         $imgUrl = UserProfile::where('user_id', $this->record->id)->first()->avatar ?? null;
