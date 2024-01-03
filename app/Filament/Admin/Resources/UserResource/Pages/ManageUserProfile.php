@@ -8,6 +8,7 @@ use App\Models\UserProfile;
 use App\Models\EmergencyContact;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\Page;
+use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Grid;
 use App\Models\EmergencyInformation;
 use Filament\Forms\Components\Toggle;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Infolists\Components\TextEntry;
 use App\Filament\Admin\Resources\UserResource;
 use App\Filament\User\Resources\RiderResource;
@@ -264,15 +266,10 @@ class ManageUserProfile extends Page implements HasForms
             ->schema([
                 Grid::make()
                 ->schema([
-                    FileUpload::make('avatar')
+                    Placeholder::make('avatar')
                         ->label('Profile Picture')
-                        ->helperText('This Image will be used to identify the rider before getting on Skoolbus.')
-                        ->image()
-                        ->imageEditor()
-                        ->avatar()
-                        ->disk('useravatar')
-                        ->columnSpan(1)
-                        ->extraAttributes(['width' => 200, 'height' => 200, 'style' => 'margin:auto;']),
+                        ->content(new HtmlString('<h4>The Profile Picture can only be changed <a style="text-decoration:underline;" href="/admin/riders">Here</a>.</h4>'))
+                        ->columnSpan(1),
                     Grid::make()
                     ->schema([
                         TextInput::make('name')
@@ -424,6 +421,7 @@ class ManageUserProfile extends Page implements HasForms
         $riderData = Rider::find($riderId);
         if($riderData){
             $this->riderForm->fill($riderData->toArray(), 'riderForm');
+            
         }
     }
 

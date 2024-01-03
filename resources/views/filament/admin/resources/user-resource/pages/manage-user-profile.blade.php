@@ -81,13 +81,16 @@
                         </div>
                     @endif
     
-                    <x-filament::modal>
+                    <x-filament::modal width="2xl">
                         <x-slot name="trigger">
-                            @foreach($this->riders as $rider)
-                                <x-filament::button wire:click="riderFormFill({{ $rider->id }})" outlined>
-                                    {{ $rider->name }} (ID: {{ $rider->id }})
-                                </x-filament::button>
-                            @endforeach
+                            <div class="block">
+                                @foreach($this->riders as $rider)
+                                    <x-filament::button style="margin:0 0 20px 20px;" wire:click="riderFormFill({{ $rider->id }})" outlined>
+                                        {{ $rider->name }}
+                                    </x-filament::button>
+                                @endforeach
+
+                            </div>
                         </x-slot>
                             
                         {{-- Modal content --}}
@@ -96,7 +99,7 @@
                                 {{ $this->riderForm  }}
                                 
                                 
-                                <x-filament::button class="mt-3" type="submit" outlined>
+                                <x-filament::button style="margin-top:20px;" type="submit" outlined>
                                     Save
                                     <x-filament::loading-indicator wire:loading class="h-5 w-5" />
                                 </x-filament::button>
