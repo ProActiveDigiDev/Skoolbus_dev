@@ -7,6 +7,7 @@ use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
 use Filament\Navigation\MenuItem;
+use Widgets\BookingCalendarWidget;
 use Filament\Navigation\NavigationItem;
 use App\Filament\User\Pages\EditProfile;
 use Filament\Http\Middleware\Authenticate;
@@ -18,6 +19,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 
 class UserPanelProvider extends PanelProvider
@@ -66,7 +68,14 @@ class UserPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+                FilamentFullCalendarPlugin::make()
+                    ->selectable(true)
+                    ->editable()
+                    ->timezone('Africa/Johannesburg')
+                    ->config([
+                        'height' => 'auto',
+                    ])
             ]);
     }
 }

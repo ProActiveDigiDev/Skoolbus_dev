@@ -86,12 +86,12 @@ class Settings extends Page implements HasForms
                                 Section::make('Contact Information')
                                 ->description('Your business contact info.')
                                 ->schema([
-                                    TextInput::make('site_contact_nr')
+                                    TextInput::make('site_contact_nr1')
                                     ->label('Contact Number')
                                     ->prefixIcon('heroicon-o-phone')
                                     ->required(),
                                     
-                                    TextInput::make('site_contact_nr1')
+                                    TextInput::make('site_contact_nr2')
                                     ->prefixIcon('heroicon-o-phone')
                                     ->label('Contact Number (alt)'),
                                     
@@ -274,12 +274,12 @@ class Settings extends Page implements HasForms
         WebsiteConfigs::where('var_name', 'site_description')
         ->update(['var_value' => $this->data['site_description']]);
 
-        WebsiteConfigs::where('var_name', 'site_contact_nr')
-        ->update(['var_value' => $this->data['site_contact_nr']]);
-
         WebsiteConfigs::where('var_name', 'site_contact_nr1')
         ->update(['var_value' => $this->data['site_contact_nr1']]);
-
+        
+        WebsiteConfigs::where('var_name', 'site_contact_nr2')
+        ->update(['var_value' => $this->data['site_contact_nr2']]);
+        
         WebsiteConfigs::where('var_name', 'site_contact_email1')
         ->update(['var_value' => $this->data['site_contact_email1']]);
 
