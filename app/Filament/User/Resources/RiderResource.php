@@ -6,11 +6,13 @@ use Filament\Forms;
 use Filament\Tables;
 use App\Models\Rider;
 use Filament\Forms\Set;
+use App\Models\Location;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -92,8 +94,8 @@ class RiderResource extends Resource
                 TextInput::make('phone')
                     ->tel()
                     ->maxLength(191),
-                TextInput::make('school')
-                    ->maxLength(191),                        
+                Select::make('school')
+                    ->options(Location::where('destination_type', 'school')->pluck('name', 'id')),                        
             ]),
         ]);
     }
