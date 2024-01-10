@@ -30,4 +30,12 @@ class Rider extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Get the user_bookings associated with this rider.
+     */
+    public function user_bookings()
+    {
+        return $this->hasMany(UserBooking::class);
+    }
 }

@@ -58,7 +58,16 @@ class editProfile extends Page implements HasForms
 
     public function mount(): void
     {
-        abort_unless(auth()->user()->id, 403);
+        abort_unless(function(): bool
+        {
+            $panelId = filament()->getCurrentPanel()->getID();
+    
+            if($panelId === 'admin' && auth()->user()->id){
+                return false;
+            }else if($panelId === 'Busstop' && auth()->user()->id){
+                return true;
+            }
+        }, 403);
 
         //get user profile data from user_profile table
         $profileData = UserProfile::where('user_id', auth()->user()->id)->first();
@@ -342,8 +351,13 @@ class editProfile extends Page implements HasForms
     
     public static function shouldRegisterNavigation(): bool
     {
-        // return auth()->user()->hasRole(['Admin', 'Owner', 'Parent', 'Driver']);
-        return true;
+        $panelId = filament()->getCurrentPanel()->getID();
+
+        if($panelId === 'admin'){
+            return false;
+        }else if($panelId === 'Busstop'){
+            return true;
+        }
     }
 }
 
