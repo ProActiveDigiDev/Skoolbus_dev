@@ -12,6 +12,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
 use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
@@ -214,6 +215,15 @@ class Settings extends Page implements HasForms
                             Section::make('Rides Settings')
                             ->description('Configurations for all Ride related settings.')
                             ->schema([
+                                Grid::make('grid')
+                                ->schema([
+                                    KeyValue::make('booking_states')
+                                    ->keyLabel('State')
+                                    ->valueLabel('State')
+                                    
+                                ])
+                                ->columnSpan(1),
+
                                 TextInput::make('ride_credit_rate')
                                 ->numeric()
                                 ->prefix('R')
@@ -223,7 +233,7 @@ class Settings extends Page implements HasForms
                                 ->numeric()
                                 ->helperText('What is the default maximum number of riders allowed on a single ride?'),
                             ])
-                            ->columns(4)
+                            ->columns(2)
                             ->columnSpan(1),
                         ]),
 
@@ -235,8 +245,14 @@ class Settings extends Page implements HasForms
     {
         abort_unless(auth()->user()->hasRole(['super_admin', 'user_admin']), 403);
 
+        
         foreach ($websiteConfigs::all() as $config) {
-            $this->data[$config->var_name] = $config->var_value;
+            //check if the config is a json array
+            if($config->var_name == 'booking_states'){
+                $this->data[$config->var_name] = json_decode($config->var_value, true);
+            }else{
+                $this->data[$config->var_name] = $config->var_value;
+            }
         }
 
         $this->form->fill($this->data);
@@ -321,6 +337,11 @@ class Settings extends Page implements HasForms
         
         WebsiteConfigs::where('var_name', 'ride_credit_rate')
         ->update(['var_value' => $this->data['ride_credit_rate']]);
+
+        WebsiteConfigs::where('var_name', 'booking_states')
+        ->update(['var_value' => $this->data['booking_states']]);
+
+        // dd($this->data['booking_states']);
 
         $this->form->fill($this->data);
 

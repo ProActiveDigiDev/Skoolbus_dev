@@ -2,11 +2,14 @@
 
 namespace App\Providers\Filament;
 
+use Carbon\Carbon;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
 use Filament\Navigation\MenuItem;
+use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\DB;
 use Widgets\BookingCalendarWidget;
 use Filament\Navigation\NavigationItem;
 use App\Filament\User\Pages\EditProfile;
@@ -26,6 +29,12 @@ class UserPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        $websiteConfigs = DB::table('website_configs')
+        ->select('var_name', 'var_value')
+        ->get()
+        ->pluck('var_value', 'var_name')
+        ->toArray();
+        
         return $panel
             ->id('Busstop')
             ->path('Busstop')
@@ -39,7 +48,8 @@ class UserPanelProvider extends PanelProvider
             ->brandLogoHeight('40px')
             ->favicon(asset('storage/branding/favicon.png'))
             ->colors([
-                'primary' => '#fdd219',
+                'primary' =>  $websiteConfigs['site_brand_color_primary'] ?? Color::Amber,
+                'secondary' => $websiteConfigs['site_brand_color_secondary'] ?? Color::Gray,
             ])
             ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/User/Resources'), for: 'App\\Filament\\User\\Resources')
@@ -75,6 +85,10 @@ class UserPanelProvider extends PanelProvider
                     ->timezone('Africa/Johannesburg')
                     ->config([
                         'height' => 'auto',
+                        'timeFormat' => null,
+                        'eventTextColor' => '#000',
+                        'validRange' => ['start' => Carbon::now()->addDays(1)->format('Y-m-d')],
+                        'editable' => false,
                     ])
             ]);
     }

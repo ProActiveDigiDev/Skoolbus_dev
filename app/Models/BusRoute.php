@@ -51,7 +51,15 @@ class BusRoute extends Model
      */
     public function timeslot(): BelongsTo
     {
-        return $this->belongsTo(Timeslot::class);
+        return $this->belongsTo(Timeslot::class, 'timeslot_id');
+    }
+
+    /**
+     * Get the user_bookings associated with this bus route.
+     */
+    public function user_bookings()
+    {
+        return $this->hasMany(UserBooking::class, 'busroute_id');
     }
 
 }

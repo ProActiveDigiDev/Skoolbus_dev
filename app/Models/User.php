@@ -99,6 +99,22 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return $this->hasMany(Rider::class);
     }
 
+    /**
+     * Get all the user_bookings associated with the user.
+     */
+    public function user_booking(): HasMany
+    {
+        return $this->hasMany(UserBooking::class);
+    }
+
+    /**
+     * Get the user_account associated with the user.
+     */
+    public function user_account(): HasOne
+    {
+        return $this->hasOne(UserAccount::class);
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {    
         $panelId = $panel->getID();

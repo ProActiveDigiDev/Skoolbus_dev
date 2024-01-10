@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Carbon\Carbon;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
@@ -25,6 +26,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Saade\FilamentFullCalendar\FilamentFullCalendarPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 
 class AdminPanelProvider extends PanelProvider
@@ -88,7 +90,18 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make()
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+                FilamentFullCalendarPlugin::make()
+                    ->selectable(true)
+                    ->editable()
+                    ->timezone('Africa/Johannesburg')
+                    ->config([
+                        'height' => 'auto',
+                        'timeFormat' => null,
+                        'eventTextColor' => '#000',
+                        'validRange' => ['start' => Carbon::now()->addDays(1)->format('Y-m-d')],
+                        'editable' => false,
+                    ])
             ]);
     }
 }
