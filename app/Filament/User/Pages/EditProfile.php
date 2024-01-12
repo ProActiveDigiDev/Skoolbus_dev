@@ -15,6 +15,7 @@ use App\Models\EmergencyInformation;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Textarea;
 use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
@@ -183,11 +184,11 @@ class editProfile extends Page implements HasForms
         ->schema([
             Section::make('Medical Aid Information')
             ->schema([
-                Toggle::make('has_medical_aid')
+                Checkbox::make('has_medical_aid')
                 ->live(),
 
                 Grid::make()
-                ->hidden(fn (?array $state) => !($state && $state['has_medical_aid']))
+                ->hidden(fn (Get $get) => !$get('has_medical_aid'))
                 ->schema([
                     TextInput::make('medical_aid_name')
                     ->label('Medical Aid Name')

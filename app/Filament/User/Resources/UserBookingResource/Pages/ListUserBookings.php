@@ -13,9 +13,17 @@ class ListUserBookings extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            Actions\CreateAction::make(),
-        ];
+        //check if user is admin
+        $panelId = filament()->getCurrentPanel()->getID();
+
+        if($panelId === 'admin'){
+            return [
+                Actions\CreateAction::make(),
+            ];
+        }else if($panelId === 'Busstop'){
+            return [];
+        }
+
     }
 
     public static function getWidgets(): array

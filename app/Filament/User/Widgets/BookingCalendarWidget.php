@@ -56,11 +56,13 @@ class BookingCalendarWidget extends FullCalendarWidget
         return UserBooking::query()
         ->with('rider')
         ->where('user_id', auth()->user()->id)
+        ->has('rider')
         ->get()
         ->map(
             function (UserBooking $event, $brandColor)
             {
                 $brandColor = $this->brandColor::where('var_name', 'site_brand_color_primary')->first()->var_value;
+                
                 $this->getRidersColors($event->rider->id, $brandColor, $this->lightnessIncrement);
                 $color = $this->riderList[$event->rider->id];
                 

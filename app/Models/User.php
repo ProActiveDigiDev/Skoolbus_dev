@@ -115,6 +115,18 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return $this->hasOne(UserAccount::class);
     }
 
+    /**
+     * Get the credit_purchases associated with the user.
+     */
+    public function credit_purchases(): HasMany
+    {
+        return $this->hasMany(CreditPurchases::class);
+    }
+
+
+    /**
+     * Determine whether the user can access the given panel.
+     */
     public function canAccessPanel(Panel $panel): bool
     {    
         $panelId = $panel->getID();

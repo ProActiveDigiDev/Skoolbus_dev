@@ -14,6 +14,5 @@ use Illuminate\Support\Facades\Redirect;
 |
 */
 
-Route::get('/', function () {
-    return Redirect::to('/Busstop');
-});
+//redirect from the home toe the busstop dashboard
+Route::redirect('/', '/Busstop');
