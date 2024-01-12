@@ -19,7 +19,9 @@ class BookingCalendar extends Page implements HasForms
 
     protected static ?string $navigationLabel = 'Booking Calendar';
 
-    protected static ?string $navigationGroup = 'Booking Management';
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationGroup = 'Bookings';
 
     protected static ?string $title = 'Booking Calendar';
 

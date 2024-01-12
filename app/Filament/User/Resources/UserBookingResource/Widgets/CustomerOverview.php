@@ -18,7 +18,7 @@ class CustomerOverview extends Widget
     public function mount()
     {
         $this->cost_per_credit = WebsiteConfigs::where('var_name', 'ride_credit_rate')->pluck('var_value')->first();
-        $this->user_credits = auth()->user()->user_account->user_credits;
+        $this->user_credits = auth()->user()->user_account->user_credits ?? 0;
     }
 
     

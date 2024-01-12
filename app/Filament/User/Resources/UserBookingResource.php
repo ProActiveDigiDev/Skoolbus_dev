@@ -4,6 +4,7 @@ namespace App\Filament\User\Resources;
 
 use Filament\Forms;
 use App\Models\User;
+use App\Models\Rider;
 use Filament\Tables;
 use Filament\Forms\Get;
 use App\Models\BusRoute;
@@ -35,9 +36,11 @@ class UserBookingResource extends Resource
 
     protected static ?string $navigationLabel = 'All Bookings';
 
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $navigationGroup = 'Booking Management';
+    protected static ?string $navigationGroup = 'Bookings';
 
     protected bool $isAuth = false;
 
@@ -61,20 +64,36 @@ class UserBookingResource extends Resource
             ->schema([
                 Grid::make('grid')
                 ->schema([
-                    TextInput::make('user_id')
-                        ->label(function(?Model $record){
-                            $userName = User::where('id', $record->user_id)->pluck('name')->first();
-                            return 'User: ' . $userName;
-                        })
-                        ->disabled()
-                        ->columnSpan(1),
-                    TextInput::make('rider_id')
-                        ->disabled()
-                        ->columnSpan(1),
+                    Grid::make('grid')
+                    ->schema([
+                        Select::make('user_id')
+                            ->label('User')
+                            ->options(
+                                function(){
+                                    return User::all()->pluck('name', 'id');
+                                }
+                            )
+                            ->live()
+                            ->searchable()
+                            ->columnSpan(1),
+
+                        Select::make('rider_id')
+                            ->label('Rider')
+                            ->hidden(fn(Get $get) => !$get('user_id'))  
+                            ->options(
+                                fn($get):array => Rider::where('user_id', $get('user_id'))->get()->pluck('name', 'id')->toArray()
+                            )
+                            ->columnSpan(1),
+                    ])
+                    ->columns(2)
+                    ->columnSpan(2),
+
                     Select::make('busroute_id')
                         ->required()
                         ->relationship('busroute', 'name')
+                        ->searchable()
                         ->columnSpan(1),
+
                     DatePicker::make('busroute_date')
                         ->required()
                         ->columnSpan(1),
@@ -204,10 +223,8 @@ class UserBookingResource extends Resource
                         Grid::make('grid')
                         ->schema([
                             DatePicker::make('From')
-                            ->default(now())
                             ->columnSpan(1),
                             DatePicker::make('To')
-                            ->default(now())
                             ->columnSpan(1),
 
                             Select::make('busroute_id')
@@ -233,6 +250,7 @@ class UserBookingResource extends Resource
                         ->columnSpan(2),
                     ])
                 ])
+                ->default()
                 ->query(function (Builder $query, array $data): Builder {
                     return $query
                         ->when(
@@ -289,7 +307,6 @@ class UserBookingResource extends Resource
     {
         return [
             'index' => Pages\ListUserBookings::route('/'),
-            'create' => Pages\CreateUserBooking::route('/create'),
         ];
     }
 

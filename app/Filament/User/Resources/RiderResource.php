@@ -95,6 +95,7 @@ class RiderResource extends Resource
                     ->tel()
                     ->maxLength(191),
                 Select::make('school')
+                    ->required()
                     ->options(Location::where('destination_type', 'school')->pluck('name', 'id')),                        
             ]),
         ]);
