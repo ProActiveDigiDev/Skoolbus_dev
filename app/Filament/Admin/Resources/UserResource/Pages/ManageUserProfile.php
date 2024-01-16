@@ -2,15 +2,19 @@
 
 namespace App\Filament\Admin\Resources\UserResource\Pages;
 
+use App\Models\User;
 use App\Models\Rider;
+use Filament\Forms\Get;
 use Filament\Forms\Form;
 use App\Models\UserProfile;
+use App\Models\ModelHasRoles;
 use App\Models\EmergencyContact;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Grid;
 use App\Models\EmergencyInformation;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Contracts\HasForms;
@@ -47,6 +51,8 @@ class ManageUserProfile extends Page implements HasForms
     public ?array $emergencyInformationData = [];
     public ?array $emergencyContactData = [];
     public ?array $riderData = [];
+    public ?array $userRoleData = [];
+
 
     protected function getForms(): array
     {
@@ -54,13 +60,15 @@ class ManageUserProfile extends Page implements HasForms
             'profileForm',
             'emergencyInformationForm',
             'emergencyContactForm',
-            'riderForm'
+            'riderForm',
+            'userRoleForm'
+
         ];
     }
 
     public function mount(int | string $record): void
     {
-        abort_unless(auth()->user()->id, 403);
+        abort_unless(auth()->user()->hasRole(['super_admin', 'admin_user']), 403);
 
         $this->record = $this->resolveRecord($record);
  
@@ -86,6 +94,12 @@ class ManageUserProfile extends Page implements HasForms
         
         //get all riders profiles associated with the user
         $this->riders = $this->riderData();
+
+        //get user Role
+        $userRoleData = ModelHasRoles::where('model_id', $this->record->id)->first();
+        if($userRoleData){
+            $this->userRoleForm->fill($userRoleData->toArray(), 'userRoleForm');
+        }
 
     }
 
@@ -181,9 +195,11 @@ class ManageUserProfile extends Page implements HasForms
         ->schema([
             Section::make('Medical Aid Information')
             ->schema([
-                Toggle::make('has_medical_aid'),
+                Toggle::make('has_medical_aid')
+                ->live(),
 
                 Grid::make()
+                ->hidden(fn (Get $get) => !$get('has_medical_aid'))
                 ->schema([
                     TextInput::make('medical_aid_name')
                     ->label('Medical Aid Name')
@@ -298,6 +314,44 @@ class ManageUserProfile extends Page implements HasForms
         ->statePath('riderData')
         ->model(Rider::class);
     }
+    
+    public function userRoleForm(Form $form): Form
+    {
+        return $form
+        ->schema([
+            Section::make('User Role')
+            ->schema([
+                Grid::make()
+                ->schema([
+                    Select::make('role_id')
+                    ->options(function(){
+                        $roles = \Spatie\Permission\Models\Role::all();
+                        $rolesArray = [];
+                        foreach($roles as $role){
+                            //skip super_admin and panel_user roles
+                            if(($role->name == 'super_admin' || $role->name == 'panel_user') && !auth()->user()->hasRole(['super_admin'])){
+                                continue;
+                            }
+
+                            //transform $role->name from snake_case to Title Case
+                            $role->name = ucwords(str_replace('_', ' ', $role->name));
+                            //add role to array
+                            $rolesArray[$role->id] = $role->name;
+                        }
+                        return $rolesArray;
+                    })
+                    ->label('Role Name')
+                    ->columnSpan(1),
+                ])
+                ->columns(2)
+                ->columnSpan(2),
+            ])
+            ->columns(2)
+            ->columnSpan(2),
+        ])
+        ->statePath('userRoleData')
+        ->model(ModelHasRoles::class);
+    }
 
     
     /* Form submit functions */
@@ -305,7 +359,9 @@ class ManageUserProfile extends Page implements HasForms
     {
         $this->profileFormSubmit();
         $this->emergencyInformationFormSubmit();
-        $this->emergencyContactFormSubmit(); 
+        $this->emergencyContactFormSubmit();
+        $this->userRoleFormSubmit();
+
     }
 
     public function profileFormSubmit()
@@ -391,9 +447,29 @@ class ManageUserProfile extends Page implements HasForms
 
         $this->riderForm->fill($riderFormState);
     }
+    
+    public function userRoleFormSubmit(){
+
+        $userRoleFormState = $this->userRoleForm->getState();
+
+        //check if user has a role else create record
+        $userRole = ModelHasRoles::where('model_id', $this->record->id);
+        if(!$userRole){
+            $userRole = new ModelHasRoles();
+            $userRole->role_id = $userRoleFormState['role_id'];
+            $userRole->model_type = 'App\Models\User';
+            $userRole->model_id = $this->record->id;
+            $userRole->save();
+        }else{
+            //update only this role_id where model_id = $this->record->id
+            $userRole->update(['role_id' => $userRoleFormState['role_id']]);
+        }
+
+        $this->userRoleForm->fill($userRoleFormState);
+    }
+
 
     /* Additional functions */
-
     public function riderData()
     {
         //get all riders profiles associated with the user

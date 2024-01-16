@@ -90,18 +90,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugins([
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
-                FilamentFullCalendarPlugin::make()
-                    ->selectable(true)
-                    ->editable()
-                    ->timezone('Africa/Johannesburg')
-                    ->config([
-                        'height' => 'auto',
-                        'timeFormat' => null,
-                        'eventTextColor' => '#000',
-                        'validRange' => ['start' => Carbon::now()->addDays(1)->format('Y-m-d')],
-                        'editable' => false,
-                    ])
+                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(), 
             ]);
     }
 }

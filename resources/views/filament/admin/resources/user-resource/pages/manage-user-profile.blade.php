@@ -48,7 +48,8 @@
         <div class="tabs-content-holder">
 
             <div x-show="activeTab == 'tab_1'">
-                {{ $this->accountInfolist }} 
+                {{ $this->accountInfolist }}
+                {{ $this->userRoleForm }}
             </div>
 
             <div x-show="activeTab == 'tab_2'">

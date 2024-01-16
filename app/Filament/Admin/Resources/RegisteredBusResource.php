@@ -38,6 +38,8 @@ class RegisteredBusResource extends Resource
 
     public static function form(Form $form): Form
     {
+        abort_unless(auth()->user()->hasRole(['super_admin', 'admin_user']), 403);
+
         return $form
             ->schema([
                 Grid::make('grid')
@@ -104,6 +106,7 @@ class RegisteredBusResource extends Resource
 
     public static function table(Table $table): Table
     {
+        abort_unless(auth()->user()->hasRole(['super_admin', 'admin_user']), 403);
         return $table
             ->columns([
                 Stack::make([
@@ -144,5 +147,10 @@ class RegisteredBusResource extends Resource
         return [
             'index' => Pages\ManageRegisteredBuses::route('/'),
         ];
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->hasRole(['super_admin', 'admin_user']);
     }
 }

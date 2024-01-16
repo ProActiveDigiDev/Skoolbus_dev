@@ -29,8 +29,7 @@ class UserAccountResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('user_id')
-                    ->required()
-                    ->numeric(),
+                    ->disabled(),
                 Forms\Components\TextInput::make('user_credits')
                     ->maxLength(191)
                     ->default(0),

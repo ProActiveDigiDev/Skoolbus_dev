@@ -8,10 +8,12 @@ use Filament\Forms\Get;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
 use App\Models\UserProfile;
+use App\Models\ModelHasRoles;
 use App\Models\EmergencyContact;
 use Filament\Infolists\Infolist;
 use Filament\Forms\Components\Grid;
 use App\Models\EmergencyInformation;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Contracts\HasForms;
@@ -59,6 +61,7 @@ class editProfile extends Page implements HasForms
 
     public function mount(): void
     {
+       
         abort_unless(function(): bool
         {
             $panelId = filament()->getCurrentPanel()->getID();
@@ -263,6 +266,7 @@ class editProfile extends Page implements HasForms
         ->model(EmergencyContact::class);
     }
 
+
     
     /* Form submit functions */
     public function submit()
@@ -336,6 +340,7 @@ class editProfile extends Page implements HasForms
 
         $this->emergencyContactForm->fill($emergencyContactFormState);
     }
+
 
     /* Additional functions */
     public function removeCurrentImage()

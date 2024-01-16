@@ -20,6 +20,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Concerns\InteractsWithForms;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 
@@ -243,7 +244,7 @@ class Settings extends Page implements HasForms
 
     public function mount(WebsiteConfigs $websiteConfigs): void
     {
-        abort_unless(auth()->user()->hasRole(['super_admin', 'user_admin']), 403);
+        abort_unless(auth()->user()->hasRole(['super_admin', 'admin_user']), 403);
 
         
         foreach ($websiteConfigs::all() as $config) {
@@ -260,6 +261,8 @@ class Settings extends Page implements HasForms
 
     public function submit()
     {
+        abort_unless(auth()->user()->hasRole(['super_admin', 'admin_user']), 403);
+        
         foreach ($this->data['site_logo'] as $logo) {
             if($logo instanceof TemporaryUploadedFile){
                 $fileContent = file_get_contents($logo->getRealPath());
@@ -351,6 +354,6 @@ class Settings extends Page implements HasForms
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()->hasRole(['super_admin', 'user_admin']);
+        return auth()->user()->hasRole(['super_admin', 'admin_user']);
     }
 }
