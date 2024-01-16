@@ -2,13 +2,11 @@
 
 namespace App\Filament\User\Widgets;
 
-use DateTime;
 use App\Models\User;
 use App\Models\Rider;
 use Filament\Forms\Get;
 use App\Models\BusRoute;
 use App\Models\Location;
-use App\Models\Timeslot;
 use Filament\Forms\Form;
 use App\Models\UserAccount;
 use App\Models\UserBooking;
@@ -101,16 +99,14 @@ class BookingCalendarWidget extends FullCalendarWidget
                     Select::make('busroute_id')
                     ->label('Bus Route')
                     ->live()
-                    ->options(function (Get $get) {
-                        $selectArr = $get('school') ? $selectArr = ['school', $get('school')] : '';
-
-                        return $this->populateSelect($this->selectedDate, $selectArr)
+                    ->options(
+                        $this->populateSelect($this->selectedDate, $this->isShowAll ? '' : 'parent')
                         ->mapWithKeys(function ($busRoute) {
                             $departure_time = $busRoute->timeslot->departure_time;
                             return [$busRoute->id => '(' . $departure_time . ') ' . $busRoute->name . ' [Credits: ' . $busRoute->credits_per_ride . ']'];
                         })
-                        ->toArray();
-                    })
+                        ->toArray() 
+                    )
                     ->required()
                     ->afterStateUpdated(function (?string $state, ?string $old) {
                         $this->selectedRoute = $state;
@@ -118,13 +114,16 @@ class BookingCalendarWidget extends FullCalendarWidget
                             $this->isDuplicate = $this->riderDuplicateBooking($this->selectedRider, $this->selectedDate, $state);
                         }
                     })
-                    ->columnSpan(5),
+                    ->columnSpan(6),
 
-                    Select::make('school')
-                        ->label('Filter by school')
+                    Toggle::make('show_all')
+                        ->label('Show All')
+                        ->inline(false)
                         ->live()
-                        ->options(Location::where('destination_type', 'school')->pluck('name', 'id')->toArray())
-                        ->columnSpan(2),
+                        ->afterStateUpdated(function (?string $state, ?string $old) {
+                            $this->isShowAll = $state;
+                        })
+                        ->columnSpan(1),
                 ]),
             
             Grid::make('grid')
@@ -205,8 +204,7 @@ class BookingCalendarWidget extends FullCalendarWidget
                     function (Form $form) {
                         $start = $this->selectedDate;
                         $end = $this->selectedDateEnd;
-                        $this->isShowAll = true;
-                        
+
                         $form->fill([
                             'busroute_date' => $start,
                             'repeat_until' => $end,
@@ -258,7 +256,7 @@ class BookingCalendarWidget extends FullCalendarWidget
                             UserAccount::where('user_id', auth()->user()->id)->decrement('user_credits', $rideCredits);
                        }else{
                             Notification::make()
-                                ->danger() 
+                                ->danger()
                                 ->title('An unknown error occured. Please try again.')
                                 ->send();
                        }
@@ -298,32 +296,13 @@ class BookingCalendarWidget extends FullCalendarWidget
      */
     public function populateSelect($selectedDate, $query = '')
     {
-        // dd($query);
-        //check if $query is string or array
-        $type = $name = null;
-        if(is_array($query)){
-            $type = $query[0];
-            $name = $query[1];
-        }
-
-        //make selectedDate in format 'Y-m-d'
-        $selectedDate = Carbon::parse($selectedDate)->format('Y-m-d');
-        //get all bus routes
-        $allRoutes = $this->getBusRoutes($type, $name);
-        //filter bus routes to only show routes available on the selected date
+        $allRoutes = $this->getBusRoutes($query);
         $routes = $this->busrouteDayAvailableList($allRoutes, $selectedDate);
-        $nRoutes = [];
-
         foreach ($routes as $route) {
-            //if false remove from $routes
-            $hasSpace = $this->busrouteSpaceAvailable($route, $this->selectedDate);
-            if($hasSpace){
-                $nRoutes[] = $route;
-            };
-
+            $this->busrouteSpaceAvailable($route, $this->selectedDate);
         }
-        $nRoutes = collect($nRoutes);
-        return $nRoutes;
+        
+        return $routes;
     }
 
     /**
@@ -568,37 +547,28 @@ class BookingCalendarWidget extends FullCalendarWidget
      */
     public function busrouteSpaceAvailable($route, $selectedDate)
     {
+        $selectedDate = $this->selectedDate;
 
         //get bus(es) registered to this route
-        $busses = RegisteredBus::whereJsonContains('bus_routes', (string)$route->id)->get();
+        $buses = RegisteredBus::whereJsonContains('bus_routes', $route->id)->get();
         
         //get all routes from this bus(es)
-        $busroutes = BusRoute::where('is_active', 1)->whereIn('id', $busses->pluck('bus_routes')->flatten())->get();
-        
+        $busroutes = BusRoute::where('is_active', 1)->whereIn('id', $buses->pluck('bus_routes')->flatten())->get();
+
         //get all bookings for these routes on the selected date
         $bookings = UserBooking::where('busroute_date', $selectedDate)->whereIn('busroute_id', $busroutes->pluck('id')->flatten())->get();
-        
-        //get current route timeslot
-        $currentTimeslot = BusRoute::where('id', $route->id)->get()->pluck('timeslot_id')->flatten()->unique();
-        
-        //get all timeslots for these routes and remove duplicates
-        $bookedRoutes = $bookings->pluck('busroute_id')->flatten()->unique();
-        $routesWithSameTimeslot = BusRoute::where('timeslot_id', $currentTimeslot)->get()->pluck('id')->flatten()->unique()->toArray();
-        //get the overlap between $bookedRoutes and $routesWithSameTimeslot
-        $overlapRoutes = array_intersect($bookedRoutes->toArray(), $routesWithSameTimeslot);
-
-        //get bookings from this timeslot
-        $timeslotBookings = $bookings->whereIn('busroute_id', $overlapRoutes);
 
         //get total riders for these bookings
-        $totalRiders = $timeslotBookings->count();
-        
+        $totalRiders = $bookings->count();
+
         //get max riders for these busses
-        $maxRiders = $busses->sum('bus_capacity');
+        $maxRiders = $buses->sum('bus_capacity');
 
         return $totalRiders < $maxRiders;
-    }
 
+
+
+    }
 
     /**
      * Check if rider has already booked on the selected date and route
@@ -648,7 +618,7 @@ class BookingCalendarWidget extends FullCalendarWidget
      */
     public function isDateAvailable($date)
     {
-        $available = $this->populateSelect($date)->toArray();
+        $available = $this->populateSelect($date, $this->isShowAll ? '' : 'parent')->toArray();
         return !empty($available);
     }
 
@@ -704,7 +674,7 @@ class BookingCalendarWidget extends FullCalendarWidget
      * 
      */
     public function getBookingList($data)
-    { 
+    {
         $test = [];
         $checks = [];
         $start = Carbon::parse($this->selectedDate);

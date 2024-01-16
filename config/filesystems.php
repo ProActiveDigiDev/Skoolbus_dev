@@ -92,6 +92,25 @@ return [
             'throw' => false,
         ],
 
+        /* *** Production *** */
+        // 'busimages' => [
+        //     'driver' => 'local',
+        //     'root' => base_path('public_html/storage/bus_images'), // Update the root path
+        //     'url' => env('APP_URL').'/storage/bus_images',
+        //     'visibility' => 'public',
+        //     'throw' => false,
+        // ],
+
+        /* *** Development *** */
+        'busimages' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/bus_images'), // Update the root path
+            'url' => env('APP_URL').'/storage/bus_images',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+        
+
     ],
 
     /*

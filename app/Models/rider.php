@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Location;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -37,5 +38,13 @@ class Rider extends Model
     public function user_bookings()
     {
         return $this->hasMany(UserBooking::class);
+    }
+
+    /**
+     * Get the location associated with this rider.
+     */
+    public function schoolLocation()
+    {
+        return $this->belongsTo(Location::class, 'school');
     }
 }
