@@ -293,7 +293,7 @@ class BookingCalendarWidget extends FullCalendarWidget
      * 
      * @param string $selectedDate
      * @param string $query
-     * @return void
+     * @return object
      * 
      */
     public function populateSelect($selectedDate, $query = '')
@@ -542,7 +542,7 @@ class BookingCalendarWidget extends FullCalendarWidget
      * 
      * @param object $routes
      * @param string $selectedDate
-     * @return void
+     * @return object
      * 
      */
     public function busrouteDayAvailableList($routes, $selectedDate)
