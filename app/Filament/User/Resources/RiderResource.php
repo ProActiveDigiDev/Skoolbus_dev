@@ -135,7 +135,8 @@ class RiderResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('school')
+                Tables\Columns\TextColumn::make('schoolLocation.name')
+                    ->label('School')
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

@@ -62,4 +62,12 @@ class BusRoute extends Model
         return $this->hasMany(UserBooking::class, 'busroute_id');
     }
 
+    /**
+     * Get the registered_buses associated with this bus route.
+     */
+    public function registered_buses()
+    {
+        return $this->hasMany(RegisteredBus::class, 'bus_routes');
+    }
+
 }
