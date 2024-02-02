@@ -212,24 +212,7 @@ class RideRequest extends Page
 
     Public function sendNotification()
     {
-        // Update the path below to your autoload.php,
-        // see https://getcomposer.org/doc/01-basic-usage.md
-        require_once '/path/to/vendor/autoload.php';
-        use Twilio\Rest\Client;
 
-        $sid    = "AC2fc5fc5ccbfa09029212f2e7be74e1fb";
-        $token  = "[AuthToken]";
-        $twilio = new Client($sid, $token);
-
-        $message = $twilio->messages
-        ->create("whatsapp:+27790265373", // to
-            array(
-            "from" => "whatsapp:+14155238886",
-            "body" => Your appointment is coming up on July 21 at 3PM
-            )
-        );
-
-        print($message->sid);
 
     }
 
