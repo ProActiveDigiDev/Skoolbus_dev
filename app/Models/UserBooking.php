@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class UserBooking extends Model
 {
@@ -15,6 +16,7 @@ class UserBooking extends Model
         'busroute_id',
         'busroute_date',
         'busroute_status',
+        'busroute_driver',
         'busroute_pickup',
         'busroute_dropoff',
     ];
@@ -41,5 +43,13 @@ class UserBooking extends Model
     public function busroute()
     {
         return $this->belongsTo(BusRoute::class);
+    }
+
+    /**
+     * Get the bus driver associated with this booking.
+     */
+    public function busdriver(): HasOne
+    {
+        return $this->hasOne(BusDriver::class, 'busroute_driver', 'id');
     }
 }

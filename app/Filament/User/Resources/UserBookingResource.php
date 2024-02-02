@@ -245,8 +245,25 @@ class UserBookingResource extends Resource
 
                             Select::make('rider_id')
                             ->label('Rider')
-                            ->relationship('rider', 'name')
-                            ->searchable()
+                            // ->relationship('rider', 'name')
+                            ->options(function(){
+                                if(auth()->user()->hasRole(['super_admin', 'admin_user'])){
+                                    return Rider::select('name', 'surname', 'id')
+                                    ->get()
+                                    ->mapWithKeys(function ($item) {
+                                        return [$item['id'] => $item['name'] . ' ' . $item['surname']];
+                                    });
+                                }else{
+                                    //get name and surname of the rider
+                                    return Rider::where('user_id', auth()->user()->id)
+                                    ->select('name', 'surname', 'id')
+                                    ->get()
+                                    ->mapWithKeys(function ($item) {
+                                        return [$item['id'] => $item['name'] . ' ' . $item['surname']];
+                                    });
+                                }
+                            })
+                            ->searchable(fn () => auth()->user()->hasRole(['super_admin', 'admin_user']))
                             ->columnSpan(2),
                         ])
                         ->columns(2)

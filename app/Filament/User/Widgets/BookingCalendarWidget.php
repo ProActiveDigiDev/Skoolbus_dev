@@ -204,7 +204,7 @@ class BookingCalendarWidget extends FullCalendarWidget
                 ->mountUsing(
                     function (Form $form) {
                         $start = $this->selectedDate;
-                        $end = $this->selectedDateEnd;
+                        $end = $this->selectedDateEnd ?? $start;
                         $this->isShowAll = true;
                         
                         $form->fill([
@@ -216,7 +216,7 @@ class BookingCalendarWidget extends FullCalendarWidget
                 )
                 ->beforeFormFilled(function (CreateAction $action) {
                     $start = $this->selectedDate;
-                    $end = $this->selectedDateEnd;
+                    $end = $this->selectedDateEnd ?? $start;
 
                     //check if start and end date are the same then single day is selected
                     if(!$this->isRange($start, $end)){

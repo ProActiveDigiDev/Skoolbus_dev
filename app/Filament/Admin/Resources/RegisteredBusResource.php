@@ -36,6 +36,8 @@ class RegisteredBusResource extends Resource
 
     protected static ?string $navigationGroup = 'Rides Management';
 
+    protected static ?string $modelLabel = 'Registered Busses';
+
     public static function form(Form $form): Form
     {
         abort_unless(auth()->user()->hasRole(['super_admin', 'admin_user']), 403);
@@ -70,18 +72,6 @@ class RegisteredBusResource extends Resource
 
                 Grid::make('grid')
                 ->schema([
-                    TextInput::make('bus_driver_name')
-                        ->maxLength(191),
-
-                    Select::make('bus_routes')
-                        ->options(
-                            function () {
-                                return BusRoute::all()->pluck('name', 'id');
-                            }
-                        )
-                        ->multiple()
-                        ->searchable(),
-
                     TextInput::make('bus_capacity')
                         ->required()
                         ->default(fn () => WebsiteConfigs::where('var_name', 'ride_max_riders')->first()->var_value)
@@ -96,7 +86,17 @@ class RegisteredBusResource extends Resource
                                     'Inactive' => 'Inactive',
                                 ];
                             }
+                        ),
+
+                    Select::make('bus_routes')
+                        ->options(
+                            function () {
+                                return BusRoute::all()->pluck('name', 'id');
+                            }
                         )
+                        ->multiple()
+                        ->searchable()
+                        ->columnSpan(2),
                 ])
                 ->columns(2)
                 ->columnSpan(2),

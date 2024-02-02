@@ -9,12 +9,17 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Faker\Provider\ar_EG\Text;
 use Filament\Resources\Resource;
+use Filament\Forms\Components\Grid;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Filters\Filter;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Enums\FiltersLayout;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\CheckboxList;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -71,19 +76,101 @@ class UserResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('email')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->since()
                     ->searchable(),
                 TextColumn::make('rider_profile_count')
                 ->label('Riders')
                 ->counts('rider_profile'),
+                IconColumn::make('roles')
+                    ->label('Roles')
+                    ->icon(function ($state){
+                        $role = $state[0]['name'];
+                        switch ($role) {
+                            case 'super_admin':
+                                return 'heroicon-s-shield-exclamation';
+                                break;
+                            case 'admin_user':
+                                return 'heroicon-o-shield-check';
+                                break;
+                            case 'driver_user':
+                                return 'heroicon-o-truck';
+                                break;
+                            case 'parent_user':
+                                return 'heroicon-o-user';
+                                break;
+                            case 'panel_user':
+                                return 'heroicon-s-exclamation-circle';
+                                break;
+                            default:
+                                return 'heroicon-s-exclamation-circle';
+                                break;
+                        }
+                    })
+                    ->color(function($state){
+                        $role = $state[0]['name'];
+                        switch ($role) {
+                            case 'super_admin':
+                                return 'danger';
+                                break;
+                            case 'admin_user':
+                                return 'warning';
+                                break;
+                            case 'driver_user':
+                                return 'info';
+                                break;
+                            case 'parent_user':
+                                return 'success';
+                                break;
+                            case 'panel_user':
+                                return 'danger';
+                                break;
+                            default:
+                                return 'danger';
+                                break;
+                        }
+                    })
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
-                //
+                Filter::make('roles')
+                ->form([
+                    Select::make('roles')
+                        ->label('Filter by Role')
+                        ->relationship('roles', 'name')
+                        ->options( function(){
+                           return \Spatie\Permission\Models\Role::whereNot('name', 'super_admin')->whereNot('name', 'panel_user')
+                           ->get()
+                           ->pluck('name', 'id');
+
+                        })
+                        ->multiple()
+                        ->columnSpan(2),
+                ])
+                ->default()
+                ->query(function (Builder $query, array $data): Builder {
+                    //make a string from the array of roles
+                    $role = $data['roles'];
+
+                    return $query
+                        ->when(
+                            $role,
+                            // fn (Builder $query, array $role) => $query->whereHas('roles', fn ($query) => $query->where('id', $role))
+                            fn (Builder $query, array $role) => $query->whereHas('roles', fn ($query) => $query->whereIn('id', $role))
+                        );
+                })
             ])
+            ->filtersTriggerAction(
+                fn (Action $action) => $action
+                    ->button()
+                    ->label('Filter'),
+            )
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()

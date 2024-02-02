@@ -19,7 +19,7 @@ class ManageRiders extends ManageRecords
             ->using(function (array $data, string $model): Model {
                 $data['user_id'] = auth()->user()->id;
                 return $model::create($data);
-            })
+            }),
         ];
     }
 }

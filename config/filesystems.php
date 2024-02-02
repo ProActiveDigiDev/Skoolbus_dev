@@ -109,6 +109,25 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+
+        /* *** Production *** */
+        // 'driverlicense' => [
+        //     'driver' => 'local',
+        //     'root' => base_path('public_html/storage/driver_license'), // Update the root path
+        //     'url' => env('APP_URL').'/storage/driver_license',
+        //     'visibility' => 'public',
+        //     'throw' => false,
+        // ],
+
+        /* *** Development *** */
+        'driverlicense' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/driver_license'), // Update the root path
+            'url' => env('APP_URL').'/storage/driver_license',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+        
         
 
     ],

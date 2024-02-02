@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('bus_name');
             $table->string('bus_registration_number');
-            $table->string('bus_driver_name');
             $table->json('bus_routes');
             $table->string('bus_capacity');
             $table->string('bus_status');

@@ -123,6 +123,13 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return $this->hasMany(CreditPurchases::class);
     }
 
+    /**
+     * Get the bus_driver_info associated with the user.
+     */
+    public function bus_driver(): HasOne
+    {
+        return $this->hasOne(BusDriver::class);
+    }
 
     /**
      * Determine whether the user can access the given panel.
@@ -133,7 +140,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         $access = true;
 
         if($panelId === 'admin'){
-            $access = $this->hasRole('admin_user') || $this->hasRole('super_admin');
+            $access = $this->hasRole('admin_user') || $this->hasRole('driver_user') || $this->hasRole('super_admin');
         }else if($panelId === 'Busstop'){
             $access = $this->getRoleNames()->isNotEmpty();// && $this->hasVerifiedEmail();
         }
@@ -147,13 +154,18 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
             //get the last user id
             $last_user_id = User::latest()->first()->id;
             //get id from roles tabel where name is parent_user
-            $parent_user_id = \Spatie\Permission\Models\Role::where('name', 'parent_user')->value('id');
+            $parent_user_role_id = \Spatie\Permission\Models\Role::where('name', 'parent_user')->value('id');
             //set $last_user_id to 'model_id' and $parent_user_id to 'role_id' in model_has_roles table
             DB::table('model_has_roles')->insert([
-                'role_id' => $parent_user_id,
+                'role_id' => $parent_user_role_id,
                 'model_type' => 'App\Models\User',
                 'model_id' => $last_user_id,
             ]);
+
+            //create a user account for the new user
+            $user_account = new UserAccount();
+            $user_account->user_id = $last_user_id;
+            $user_account->save();
 
         });
 

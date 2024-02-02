@@ -162,6 +162,14 @@ class Settings extends Page implements HasForms
                                     ColorPicker::make('site_brand_color_secondary')
                                     ->helperText('The Secondary Color of your website or business. (HEX Color Code)')
                                     ->columnSpan(1),
+
+                                    ColorPicker::make('site_brand_text_primary')
+                                    ->helperText('The Primary Text Color of your website or business. (HEX Color Code)')
+                                    ->columnSpan(1),
+
+                                    ColorPicker::make('site_brand_text_secondary')
+                                    ->helperText('The Secondary Text Color of your website or business. (HEX Color Code)')
+                                    ->columnSpan(1),
                                 ])
                                 ->columns(2)
                                 ->columnSpan(1),
@@ -319,6 +327,12 @@ class Settings extends Page implements HasForms
 
         WebsiteConfigs::where('var_name', 'site_brand_color_secondary')
         ->update(['var_value' => $this->data['site_brand_color_secondary']]);
+
+        WebsiteConfigs::where('var_name', 'site_brand_text_primary')
+        ->update(['var_value' => $this->data['site_brand_text_primary']]);
+
+        WebsiteConfigs::where('var_name', 'site_brand_text_secondary')
+        ->update(['var_value' => $this->data['site_brand_text_secondary']]);
         
         WebsiteConfigs::where('var_name', 'site_dark_mode')
         ->update(['var_value' => $this->data['site_dark_mode']]);

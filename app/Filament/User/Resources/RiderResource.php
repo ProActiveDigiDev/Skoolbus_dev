@@ -18,9 +18,12 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ViewField;
 use Filament\Pages\Actions\DeleteAction;
+use Filament\Tables\Columns\Layout\View;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -43,6 +46,10 @@ class RiderResource extends Resource
 
     public static ?array $data = [];
 
+    public function mount(){
+        
+    }
+
     public static function getEloquentQuery(): Builder
     {
         $panelId = filament()->getCurrentPanel()->getID();
@@ -62,41 +69,49 @@ class RiderResource extends Resource
         ->schema([
             Grid::make()
             ->schema([
+                FileUpload::make('avatar')
+                    ->label('Profile Picture')
+                    ->helperText('This Image will be used to identify the rider before getting on Skoolbus.')
+                    ->image()
+                    ->imageEditor()
+                    ->avatar()
+                    ->disk('useravatar')
+                    ->columnSpan(1)
+                    ->extraAttributes(['width' => 200, 'height' => 200, 'style' => 'margin:auto;']),
+                Grid::make('QR Code')
+                ->schema([
+                    ViewField::make('rating')
+                    ->view('rider.rider-qr-code'),
+                ])->columnSpan(1)
+                ->hiddenOn('create'),
                 Grid::make()
                 ->schema([
-                    FileUpload::make('avatar')
-                        ->label('Profile Picture')
-                        ->helperText('This Image will be used to identify the rider before getting on Skoolbus.')
-                        ->image()
-                        ->imageEditor()
-                        ->avatar()
-                        ->disk('useravatar')
-                        ->columnSpan(1)
-                        ->extraAttributes(['width' => 200, 'height' => 200, 'style' => 'margin:auto;']),
-                    Grid::make()
-                    ->schema([
-                        TextInput::make('name')
-                            ->maxLength(191)
-                            ->required(),
-                        TextInput::make('surname')
-                            ->maxLength(191)
-                    ])->columnSpan(1)->columns(1),
-                ])
-                ->columns(2),
-                TextInput::make('id_number')
-                    ->label('ID Number')
-                    ->helperText("If applicable")
-                    ->maxLength(191),
-                DatePicker::make('birthday')
-                    ->format('d/M/Y')
-                    ->displayFormat('d/M/Y')
-                    ->native(false),
-                TextInput::make('phone')
-                    ->tel()
-                    ->maxLength(191),
-                Select::make('school')
-                    ->required()
-                    ->options(Location::where('destination_type', 'school')->pluck('name', 'id')),                        
+                    TextInput::make('name')
+                        ->maxLength(191)
+                        ->required()
+                        ->columnSpan(3),
+                    TextInput::make('surname')
+                        ->maxLength(191)
+                        ->columnSpan(3),
+                    TextInput::make('id_number')
+                        ->label('ID Number')
+                        ->helperText("If applicable")
+                        ->maxLength(191)
+                        ->columnSpan(6),
+                    DatePicker::make('birthday')
+                        ->format('d/M/Y')
+                        ->displayFormat('d/M/Y')
+                        ->native(false)
+                        ->columnSpan(2),
+                    TextInput::make('phone')
+                        ->tel()
+                        ->maxLength(191)
+                        ->columnSpan(2),
+                    Select::make('school')
+                        ->required()
+                        ->options(Location::where('destination_type', 'school')->pluck('name', 'id'))
+                        ->columnSpan(2),
+                ])->columns(6),
             ]),
         ]);
     }
@@ -111,7 +126,6 @@ class RiderResource extends Resource
                     ->visibility('private')
                     ->circular()
                     ->height('70px'),
-                
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
