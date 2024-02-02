@@ -12,7 +12,6 @@ class RegisteredBus extends Model
     protected $fillable = [
         'bus_name',
         'bus_registration_number',
-        'bus_driver_name',
         'bus_routes',
         'bus_capacity',
         'bus_status',
@@ -27,4 +26,5 @@ class RegisteredBus extends Model
     {
         return $this->hasMany(BusRoute::class);
     }
+
 }

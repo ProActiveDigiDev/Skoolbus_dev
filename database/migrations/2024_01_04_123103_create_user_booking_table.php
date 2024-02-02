@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('busroute_id')->constrained('busroutes')->cascadeOnDelete()->cascadeOnUpdate();
             $table->date('busroute_date');
             $table->string('busroute_status')->default('pending')->nullable();
+            $table->foreignId('busroute_driver')->nullable()->constrained('bus_drivers')->cascadeOnDelete()->cascadeOnUpdate();
             $table->boolean('busroute_pickup')->default(false)->nullable();
             $table->boolean('busroute_dropoff')->default(false)->nullable();
             $table->timestamps();

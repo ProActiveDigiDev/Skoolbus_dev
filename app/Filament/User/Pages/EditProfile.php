@@ -30,7 +30,7 @@ use Filament\Infolists\Components\Grid as infolistGrid;
 use Filament\Infolists\Components\Section as infolistSection;
 
 
-class editProfile extends Page implements HasForms
+class EditProfile extends Page implements HasForms
 {
     use InteractsWithForms;
 
@@ -201,20 +201,16 @@ class editProfile extends Page implements HasForms
                     ->label('Medical Aid Plan')
                     ->columnSpan(1),
 
+                    TextInput::make('medical_aid_number')
+                    ->label('Medical Aid Number')
+                    ->columnSpan(2),
+
                     TextInput::make('medical_aid_main_member_name')
                     ->label('Main Member Name')
                     ->columnSpan(1),
 
                     TextInput::make('medical_aid_main_member_number')
                     ->label('Main Member Number')
-                    ->columnSpan(1),
-
-                    TextInput::make('medical_aid_dependants')
-                    ->label('Dependants')
-                    ->columnSpan(1),
-
-                    TextInput::make('medical_aid_dependants')
-                    ->label('Dependants')
                     ->columnSpan(1),
                 ])
                 ->columns(2)

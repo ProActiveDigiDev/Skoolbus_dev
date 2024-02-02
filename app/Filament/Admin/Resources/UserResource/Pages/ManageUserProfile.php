@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Rider;
 use Filament\Forms\Get;
 use Filament\Forms\Form;
+use App\Models\BusDriver;
 use App\Models\UserProfile;
 use App\Models\ModelHasRoles;
 use App\Models\EmergencyContact;
@@ -23,10 +24,12 @@ use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use Filament\Infolists\Components\TextEntry;
 use App\Filament\Admin\Resources\UserResource;
 use App\Filament\User\Resources\RiderResource;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Infolists\Components\Section as infolistSection;
@@ -43,27 +46,33 @@ class ManageUserProfile extends Page implements HasForms
     protected int $recordUser;
 
     public ?string $activeTab = 'tab_1'; // Put your default tab here
+    public ?array $tabNames = [];
 
     public ?array $riders = [];
     public ?int $selectedRiderId;
+
+    public ?array $formNames = [
+        'profileForm',
+        'emergencyInformationForm',
+        'emergencyContactForm',
+        'riderForm',
+        'driverForm',
+        'userRoleForm'
+    ];
 
     public ?array $profileData = [];
     public ?array $emergencyInformationData = [];
     public ?array $emergencyContactData = [];
     public ?array $riderData = [];
     public ?array $userRoleData = [];
+    public ?array $driverData = [];
 
 
     protected function getForms(): array
     {
-        return [
-            'profileForm',
-            'emergencyInformationForm',
-            'emergencyContactForm',
-            'riderForm',
-            'userRoleForm'
-
-        ];
+        $forms =  $this->getCorrectFormsForRecord();
+        $this->getTabNames();
+        return $forms;
     }
 
     public function mount(int | string $record): void
@@ -99,6 +108,12 @@ class ManageUserProfile extends Page implements HasForms
         $userRoleData = ModelHasRoles::where('model_id', $this->record->id)->first();
         if($userRoleData){
             $this->userRoleForm->fill($userRoleData->toArray(), 'userRoleForm');
+        }
+
+        //get user driver data from bus_driver table
+        $driverData = BusDriver::where('user_id', $this->record->id)->first();
+        if($driverData){
+            $this->driverForm->fill($driverData->toArray(), 'driverForm');
         }
 
     }
@@ -353,14 +368,61 @@ class ManageUserProfile extends Page implements HasForms
         ->model(ModelHasRoles::class);
     }
 
+    public function driverForm(Form $form): Form
+    {
+        return $form
+        ->schema([
+            Grid::make('basic info')
+            ->schema([
+                Grid::make()
+                ->schema([
+                    FileUpload::make('bus_driver_license')
+                        ->label('Copy of Drivers License')
+                        ->helperText('Upload a copy of the drivers license front and back')
+                        ->disk('driverlicense')
+                        ->multiple()
+                        ->acceptedFileTypes(['application/pdf', 'image/png', 'image/jpg', 'image/jpeg'])
+                        ->minSize(10)
+                        ->maxSize(1024)
+                        ->maxFiles(2)
+                        ->columnSpan(1)
+                        ->required(),
+                ])
+                ->columns(1)
+                ->columnSpan(1),
+
+                Grid::make()
+                ->schema([
+                    TextInput::make('bus_driver_phone')
+                        ->label('Phone Number')
+                        ->tel()
+                        ->required()
+                        ->maxLength(191)
+                        ->columnSpan(2),
+                    DatePicker::make('bus_driver_license_expiry')
+                        ->required()
+                        ->columnSpan(1),
+                    Toggle::make('bus_driver_status')
+                        ->label('Active')
+                        ->inline(false)
+                        ->columnSpan((1)),
+                ])
+                ->columns(2)
+                ->columnSpan(1),
+            ])->columns(2),
+        ])
+        ->statePath('driverData')
+        ->model(BusDriver::class);
+    }
+
     
     /* Form submit functions */
     public function submit()
     {
-        $this->profileFormSubmit();
-        $this->emergencyInformationFormSubmit();
-        $this->emergencyContactFormSubmit();
-        $this->userRoleFormSubmit();
+        //submit forms according to $this->formNames array
+        foreach($this->formNames as $formName){
+            $this->{$formName.'Submit'}();
+        }
 
     }
 
@@ -468,6 +530,26 @@ class ManageUserProfile extends Page implements HasForms
         $this->userRoleForm->fill($userRoleFormState);
     }
 
+    public function driverFormSubmit()
+    {
+        $driverFormState = $this->driverForm->getState();
+        // dd($driverFormState);
+
+        //check if user has a driver else create record
+        $driver = BusDriver::where('user_id', $this->record->id)->first();
+        if(!$driver){
+            $driver = new BusDriver();
+            $driver->user_id = $this->record->id;
+        }
+        $driver->bus_driver_license = $driverFormState['bus_driver_license'];
+        $driver->bus_driver_phone = $driverFormState['bus_driver_phone'];
+        $driver->bus_driver_license_expiry = $driverFormState['bus_driver_license_expiry'];
+        $driver->bus_driver_status = $driverFormState['bus_driver_status'] ?? 0;
+        $driver->save();
+
+        $this->driverForm->fill($driverFormState);
+    }
+
 
     /* Additional functions */
     public function riderData()
@@ -511,6 +593,50 @@ class ManageUserProfile extends Page implements HasForms
         }else{
             return false;
         }
+    }
+
+    public function getTabNames()
+    {
+        $forms = $this->formNames;
+
+        foreach($forms as $form){
+            //change camelCase to Capital Case
+            $formName = ucfirst(preg_replace('/([a-z])([A-Z])/', '$1 $2', $form));
+            //remove 'Form' from form name
+            $formName = str_replace(' Form', '', $formName);
+            $this->tabNames[$form] = $formName;
+        }
+
+        //insert accountInfolist at the beginning of the $this->tabNames array
+        $this->tabNames = array_merge(['accountInfolist' => 'Account Info'], $this->tabNames);
+        return $this->tabNames;
+    }
+
+    public function getCorrectFormsForRecord()
+    {
+        //get user role name
+        $userRole = $this->record->roles->first()->name ?? null;
+
+        //get all forms
+        $forms = $this->formNames;
+
+        //get correct forms according to user role
+        switch ($userRole) {
+            case 'driver_user':
+                //remove 'emergencyInformationForm', 'emergencyContactForm', 'riderForm',
+                $forms = array_diff($forms, ['emergencyInformationForm', 'emergencyContactForm', 'riderForm']);
+                break;
+            case 'parent_user':
+                $forms = array_diff($forms, ['driverForm']);
+                break;
+            default:
+                $forms = $forms;
+        }
+
+        $this->formNames = $forms;
+
+        return $forms;
+
     }
 }
 

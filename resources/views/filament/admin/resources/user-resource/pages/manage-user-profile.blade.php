@@ -1,41 +1,21 @@
+@php
+    
+@endphp
+
 <x-filament-panels::page>   
 
     <div x-data="{activeTab : $wire.$entangle('activeTab') }">
         <x-filament::tabs label="Content tabs">
-            <x-filament::tabs.item
-            :active="$activeTab === 'tab_1'"
-            wire:click="$set('activeTab', 'tab_1')"
-            >
-            Account Information
-            </x-filament::tabs.item>
 
-            <x-filament::tabs.item
-            :active="$activeTab === 'tab_2'"
-            wire:click="$set('activeTab', 'tab_2')"
-            >
-            Profile
-            </x-filament::tabs.item>
-
-            <x-filament::tabs.item
-            :active="$activeTab === 'tab_3'"
-            wire:click="$set('activeTab', 'tab_3')"
-            >
-            Medical Aid Information
-            </x-filament::tabs.item>
-
-            <x-filament::tabs.item
-            :active="$activeTab === 'tab_4'"
-            wire:click="$set('activeTab', 'tab_4')"
-            >
-            Emergency Contact Information
-            </x-filament::tabs.item>
-
-            <x-filament::tabs.item
-            :active="$activeTab === 'tab_5'"
-            wire:click="$set('activeTab', 'tab_5')"
-            >
-            Riders Information
-            </x-filament::tabs.item>
+            @foreach ($tabNames as $tabName)
+                <x-filament::tabs.item
+                :active="$activeTab === 'tab_{{ $loop->iteration }}'"
+                wire:click="$set('activeTab', 'tab_{{ $loop->iteration }}')"
+                >
+                {{ $tabName }}
+                </x-filament::tabs.item>
+                
+            @endforeach
 
             <div class="flex justify-end">
                 <x-filament::button wire:click="submit">
@@ -47,68 +27,53 @@
 
         <div class="tabs-content-holder">
 
-            <div x-show="activeTab == 'tab_1'">
-                {{ $this->accountInfolist }}
-                {{ $this->userRoleForm }}
-            </div>
-
-            <div x-show="activeTab == 'tab_2'">
-                <form wire:submit.prevent="submit">
-                    @csrf
-                    {{ $this->profileForm }}
-                </form> 
-            </div>
+            @foreach ($tabNames as $formName => $tabName)
+                @if ($formName == 'riderForm')
+                    <div x-show="activeTab == 'tab_{{ $loop->iteration }}'">
+                        <x-filament::section>
+                            @if(!$this->riders)
+                                <div class="flex justify-center">
+                                    <h3>No Riders Found</h3>
+                                </div>
+                            @endif
             
-            <div x-show="activeTab == 'tab_3'">
-                <form wire:submit.prevent="submit">
-                    @csrf
-                    {{ $this->emergencyInformationForm }}
-                </form> 
-            </div>
-            
-            <div x-show="activeTab == 'tab_4'">
-                <form wire:submit.prevent="submit">
-                    @csrf
-                    {{ $this->emergencyContactForm }}
-                </form> 
-            </div>
+                            <x-filament::modal width="2xl">
+                                <x-slot name="trigger">
+                                    <div class="block">
+                                        @foreach($this->riders as $rider)
+                                            <x-filament::button style="margin:0 0 20px 20px;" wire:click="riderFormFill({{ $rider->id }})" outlined>
+                                                {{ $rider->name }}
+                                            </x-filament::button>
+                                        @endforeach
 
-            <div x-show="activeTab == 'tab_5'">   
-                <x-filament::section>
-                
-                    @if(!$this->riders)
-                        <div class="flex justify-center">
-                            <h3>No Riders Found</h3>
-                        </div>
-                    @endif
-    
-                    <x-filament::modal width="2xl">
-                        <x-slot name="trigger">
-                            <div class="block">
-                                @foreach($this->riders as $rider)
-                                    <x-filament::button style="margin:0 0 20px 20px;" wire:click="riderFormFill({{ $rider->id }})" outlined>
-                                        {{ $rider->name }}
-                                    </x-filament::button>
-                                @endforeach
+                                    </div>
+                                </x-slot>
+                                    
+                                {{-- Modal content --}}
+                                <div>
+                                    <form wire:submit.prevent="riderFormSubmit">
+                                        {{ $this->riderForm  }}
+                                        
+                                        
+                                        <x-filament::button style="margin-top:20px;" type="submit" outlined>
+                                            Save
+                                            <x-filament::loading-indicator wire:loading class="h-5 w-5" />
+                                        </x-filament::button>
+                                    </form>
+                                </div>
+                            </x-filament::modal>
+                        </x-filament::section>
+                    </div>
 
-                            </div>
-                        </x-slot>
-                            
-                        {{-- Modal content --}}
-                        <div>
-                            <form wire:submit.prevent="riderFormSubmit">
-                                {{ $this->riderForm  }}
-                                
-                                
-                                <x-filament::button style="margin-top:20px;" type="submit" outlined>
-                                    Save
-                                    <x-filament::loading-indicator wire:loading class="h-5 w-5" />
-                                </x-filament::button>
-                            </form>
-                        </div>
-                    </x-filament::modal>
-                </x-filament::section>          
-            </div>
+                @else
+                    <div x-show="activeTab == 'tab_{{ $loop->iteration }}'">
+                        <form wire:submit.prevent="submit">
+                            @csrf
+                            {{ $this->{$formName} }}
+                        </form>
+                    </div>
+                @endif
+            @endforeach
 
         </div>
     </div>

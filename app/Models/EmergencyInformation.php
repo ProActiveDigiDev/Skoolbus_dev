@@ -14,9 +14,9 @@ class EmergencyInformation extends Model
         'has_medical_aid',
         'medical_aid_name',
         'medical_aid_plan',
+        'medical_aid_number',
         'medical_aid_main_member_name',
         'medical_aid_main_member_number',
-        'medical_aid_dependants',
     ];
 
     protected $casts = [
