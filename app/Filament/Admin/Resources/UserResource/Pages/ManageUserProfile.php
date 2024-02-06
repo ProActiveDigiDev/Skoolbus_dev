@@ -178,10 +178,14 @@ class ManageUserProfile extends Page implements HasForms
                 ->schema([
                     TextInput::make('phone')
                     ->label('Phone number')
-                    ->tel(),
-            
+                    ->tel()
+                    ->regex('/^\+(?:\d{2}|\d{3})\d{9}$/')
+                    ->helperText('Include country code. (+27) without "0"')
+                    ->required(),
+                    
                     TextInput::make('phone_alt')
                     ->label('Phone number (w)')
+                    ->regex('/^\+(?:\d{2}|\d{3})\d{9}$/')
                     ->tel(),
 
                     TextInput::make('email')
@@ -322,8 +326,17 @@ class ManageUserProfile extends Page implements HasForms
                 TextInput::make('phone')
                     ->tel()
                     ->maxLength(191),
-                TextInput::make('school')
-                    ->maxLength(191),                        
+                Select::make('school')
+                    ->options(
+                        function(){
+                            $schools = \App\Models\Location::where('destination_type', 'school')->get();
+                            $schoolsArray = [];
+                            foreach($schools as $school){
+                                $schoolsArray[$school->id] = $school->name;
+                            }
+                            return $schoolsArray;
+                        }
+                    ),                      
             ]),
         ])
         ->statePath('riderData')
@@ -421,6 +434,9 @@ class ManageUserProfile extends Page implements HasForms
     {
         //submit forms according to $this->formNames array
         foreach($this->formNames as $formName){
+            if($formName == 'riderForm'){
+                continue;
+            }
             $this->{$formName.'Submit'}();
         }
 
@@ -489,15 +505,14 @@ class ManageUserProfile extends Page implements HasForms
         $this->emergencyContactForm->fill($emergencyContactFormState);
     }
 
-    public function riderFormSubmit()
+    public function riderFormSubmit($riderId)
     {
         // Retrieve the selected rider ID and $this->riderFormData to perform necessary actions
-        $riderId = $this->selectedRiderId;
         $riderFormState = $this->riderForm->getState();
-
+        
         $rider = Rider::find($riderId);
+        // dd($riderFormState, $rider);
         if ($rider) {
-            $rider->avatar = $riderFormState['avatar']; 
             $rider->name = $riderFormState['name'];
             $rider->surname = $riderFormState['surname'];
             $rider->id_number = $riderFormState['id_number'];
@@ -507,7 +522,7 @@ class ManageUserProfile extends Page implements HasForms
             $rider->save();
         }
 
-        $this->riderForm->fill($riderFormState);
+        $this->riderFormFill($riderId);
     }
     
     public function userRoleFormSubmit(){
@@ -572,9 +587,6 @@ class ManageUserProfile extends Page implements HasForms
 
     public function riderFormFill($riderId)
     {        
-        // Store the selected rider ID
-        $this->selectedRiderId = $riderId;
-
         //get rider data from rider table
         $riderData = Rider::find($riderId);
         if($riderData){

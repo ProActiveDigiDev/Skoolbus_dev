@@ -60,9 +60,9 @@
         <div class="flex flex-col items-center justify-center max-h-fit min-h-screen brand_color-primary">
     
             @if ($request_message[0] != 'noRider')
-                <div class="w-full brand_color-primary">
-                    <div name="heading" class="flex items-center justify-center w-full brand_border-primary">
-                        <h2 class="mx-auto text-2xl font-bold brand_text-primary">{{ $rider_info['name'] }}</h2>
+                <div class="w-full">
+                    <div name="heading" class="flex items-center justify-center w-full">
+                        <h2 class="mx-auto text-2xl font-bold brand_text-primary">{{ $rider_info['name'] . ' ' . $rider_info['surname'] }}</h2>
                     </div>
                 
                     <img
@@ -72,12 +72,6 @@
                         class="rounded-full"
                         style="object-fit: cover; object-position: center; width: 150px; height: 150px; border-radius: 50%;"
                     />
-                    {{-- <x-filament::avatar 
-                        class="rider-avatar mx-auto"
-                        src="{{ asset('storage/user_avatars/' . $rider_info['avatar']) }}"
-                        alt="{{ $rider_info['name'] . ' Avatar'}}"
-                        size="xl"
-                    /> --}}
                     @if ($request_message[0] == 'success')
                         <div class="flex flex-col items-center justify-center mx-auto px-4">
                             <div class="flex flex-col items-center justify-center">
@@ -130,13 +124,13 @@
     
                     @else
                         <div class="text-center">
-                            <h3 class="text-2xl font-bold brand_text-primary">{{ $request_message[1] }}</h3>
+                            <h3 class="text-2xl font-bold brand_text-primary">{!! $request_message[1] !!}</h3>
                         </div>
                     @endif
                 </div>
             @else
                 <div class="text-center">
-                    <h3 class="text-2xl font-bold brand_text-primary">{{ $request_message[1] }}</h3>
+                    <h3 class="text-2xl font-bold brand_text-primary">{!! $request_message[1] !!}</h3>
                 </div>
             @endif
     

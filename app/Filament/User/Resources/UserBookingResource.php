@@ -148,46 +148,16 @@ class UserBookingResource extends Resource
                     ->label('Rider')
                     ->sortable(),
 
-
-                /*Admin Columns*/
-                Tables\Columns\SelectColumn::make('busroute.id')
-                    ->label('Bus Route')
-                    ->options(function(){
-                        return BusRoute::all()->pluck('name', 'id');
-                    })
-                    ->selectablePlaceholder(false)
-                    ->hidden(fn() => !auth()->user()->hasRole(['super_admin', 'admin_user']))
-                    ->sortable(),
-                Tables\Columns\SelectColumn::make('busroute_status')
-                    ->options(
-                        function(){
-                            $options = WebsiteConfigs::where('var_name', 'booking_states')->get()->pluck('var_value');
-                            $optionsArr = json_decode($options[0], true);
-                            return $optionsArr;
-                        }
-                    )
-                    ->selectablePlaceholder(false)
-                    ->hidden(fn() => !auth()->user()->hasRole(['super_admin', 'admin_user']))
-                    ->toggleable(isToggledHiddenByDefault: false)
-                    ->searchable(),
-                Tables\Columns\CheckboxColumn::make('busroute_pickup')
-                    ->hidden(fn() => !auth()->user()->hasRole(['super_admin', 'admin_user']))
-                    ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\CheckboxColumn::make('busroute_dropoff')
-                    ->hidden(fn() => !auth()->user()->hasRole(['super_admin', 'admin_user']))
-                    ->toggleable(isToggledHiddenByDefault: false),
-
-
-                /*Busstop Columns*/
                 Tables\Columns\TextColumn::make('busroute.name')
                     ->label('Bus Route')
-                    ->hidden(fn() => auth()->user()->hasRole(['super_admin', 'admin_user']))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('busroute_status')
-                    ->hidden(fn() => auth()->user()->hasRole(['super_admin', 'admin_user']))
-                    ->badge(fn(string $state) => match($state){
-                        'pending' => 'warning',
-                        'booked' => 'success',
+                    ->badge()
+                    ->color(fn(string $state) => match($state){
+                        'pending' => 'danger',
+                        'booked' => 'info',
+                        'intransit' => 'warning',
+                        'completed' => 'success',
                         'cancelled' => 'danger',
                         default => 'secondary',
                     })
@@ -195,19 +165,15 @@ class UserBookingResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('busroute_pickup')
                     ->label('Collection Status')
-                    ->hidden(fn() => auth()->user()->hasRole(['super_admin', 'admin_user']))
                     ->sortable()
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('busroute_dropoff')
                     ->label('Dropoff Status')
-                    ->hidden(fn() => auth()->user()->hasRole(['super_admin', 'admin_user']))
                     ->sortable()
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-
-                    /*Common Columns*/
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -245,7 +211,6 @@ class UserBookingResource extends Resource
 
                             Select::make('rider_id')
                             ->label('Rider')
-                            // ->relationship('rider', 'name')
                             ->options(function(){
                                 if(auth()->user()->hasRole(['super_admin', 'admin_user'])){
                                     return Rider::select('name', 'surname', 'id')
@@ -254,7 +219,6 @@ class UserBookingResource extends Resource
                                         return [$item['id'] => $item['name'] . ' ' . $item['surname']];
                                     });
                                 }else{
-                                    //get name and surname of the rider
                                     return Rider::where('user_id', auth()->user()->id)
                                     ->select('name', 'surname', 'id')
                                     ->get()
