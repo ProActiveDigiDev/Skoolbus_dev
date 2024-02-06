@@ -51,13 +51,12 @@
                                     
                                 {{-- Modal content --}}
                                 <div>
-                                    <form wire:submit.prevent="riderFormSubmit">
+                                    <form>
                                         {{ $this->riderForm  }}
                                         
                                         
-                                        <x-filament::button style="margin-top:20px;" type="submit" outlined>
+                                        <x-filament::button style="margin-top:20px;" wire:click="riderFormSubmit({{ $rider->id }})" outlined>
                                             Save
-                                            <x-filament::loading-indicator wire:loading class="h-5 w-5" />
                                         </x-filament::button>
                                     </form>
                                 </div>

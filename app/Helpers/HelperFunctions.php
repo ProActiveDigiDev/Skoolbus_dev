@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\WhatsAppController;
+
 
 if(!function_exists('encID')){
     function encID($userId, $type) {
@@ -40,4 +42,19 @@ if(!function_exists('encID')){
     }
     
     
+}
+
+if(!function_exists('sendWhatsAppNotification')){
+    function sendWhatsAppNotification($to_num, $message)
+    {
+        //if in dev mode, send to test number
+        if(env('APP_ENV') == 'local'){
+            $to_num = env('TEST_WHATSAPP_NUMBER');
+        }
+
+        //send notification to rider parent
+        $whatsapp = new WhatsAppController();
+        return $whatsapp->sendWhatsAppMessage($to_num, $message);
+
+    }
 }

@@ -155,10 +155,13 @@ class EditProfile extends Page implements HasForms
                     TextInput::make('phone')
                     ->label('Phone number')
                     ->tel()
+                    ->regex('/^\+(?:\d{2}|\d{3})\d{9}$/')
+                    ->helperText('Include country code. (+27) without "0"')
                     ->required(),
-            
+                    
                     TextInput::make('phone_alt')
                     ->label('Phone number (w)')
+                    ->regex('/^\+(?:\d{2}|\d{3})\d{9}$/')
                     ->tel(),
 
                     TextInput::make('email')

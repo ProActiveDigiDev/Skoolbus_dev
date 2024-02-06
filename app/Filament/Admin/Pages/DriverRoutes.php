@@ -13,11 +13,12 @@ class DriverRoutes extends Page
 
     protected static string $view = 'filament.admin.pages.driver-routes';
 
+    protected static ?string $navigationGroup = 'Rides Management';
+
     public ?array $routes = [];
 
     public function mount()
     {
-        return redirect()->route("user-login");
         if (!auth()->check() || !auth()->user()->hasRole(['super_admin', 'admin_user', 'driver_user'])) {
             return redirect()->route("user-login");
         }
@@ -122,9 +123,43 @@ class DriverRoutes extends Page
         return $routes;        
     }
 
+    public function confirmRouteCompleted($route_id)
+    {
+        //gett all the bookings for the route
+        $routeBookings = [];
+        foreach ($this->routes[$route_id] as $booking) {
+            $routeBookings[] = $booking['id'];
+        }
+        
+        //update the status of the bookings
+        UserBooking::whereIn('id', $routeBookings)
+        ->update([
+            'busroute_status' => 'completed',
+            'busroute_dropoff' => true,
+        ]);
+
+        //retrieve the bookings with rider and parent info
+        $bookings = UserBooking::whereIn('id', $routeBookings)
+        ->with('user.user_profile')
+        ->with('rider')
+        ->with('busroute.toLocation')
+        ->get();
+
+        //send a message to the parents
+        foreach ($bookings as $booking) {
+            $to_num = $booking->user->user_profile->phone;
+            $message = $booking->rider->name . ' has been dropped off by the Skoolbus at ' . $booking->busroute->toLocation->name . ' (' . now()->format('H:i') . '). Thank you for using Skoolbus.';
+            sendWhatsAppNotification($to_num, $message);
+        }
+        
+        //remove the route from the driver routes
+        unset($this->routes[$route_id]);
+
+        return 'success';
+    }
+
     public static function shouldRegisterNavigation(): bool
     {
-        return false;
         return auth()->user()->hasRole(['super_admin', 'driver_user']);
     }
 }

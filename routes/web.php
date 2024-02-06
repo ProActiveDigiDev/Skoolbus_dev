@@ -4,6 +4,7 @@ use App\Livewire\Rider\RiderRequest;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Redirect;
 use App\Filament\Admin\Pages\RideRequest;
+use App\Http\Controllers\WhatsappController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,7 +33,4 @@ Route::get('/admin-login', function () {
 
 //rider ride request page
 Route::get('/admin/ride-request/{rider}', RideRequest::class)->name('rider-ride-request');
-
-//rider ride request livewire page
-Route::get('/livewire/rider/rider-request/{rider}', RiderRequest::class)->name('static-rider-ride-request');
 
