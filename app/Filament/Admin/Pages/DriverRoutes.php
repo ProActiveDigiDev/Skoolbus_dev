@@ -131,7 +131,7 @@ class DriverRoutes extends Page
             $routeBookings[] = $booking['id'];
         }
         
-        //update the status of the bookings
+        // update the status of the bookings
         UserBooking::whereIn('id', $routeBookings)
         ->update([
             'busroute_status' => 'completed',
@@ -139,7 +139,8 @@ class DriverRoutes extends Page
         ]);
 
         //retrieve the bookings with rider and parent info
-        $bookings = UserBooking::whereIn('id', $routeBookings)
+        $bookings = UserBooking::where('busroute_id', $route_id)
+        ->where('busroute_date', today()->format('Y-m-d'))
         ->with('user.user_profile')
         ->with('rider')
         ->with('busroute.toLocation')
@@ -147,9 +148,26 @@ class DriverRoutes extends Page
 
         //send a message to the parents
         foreach ($bookings as $booking) {
+            $status = $booking->busroute_status;
             $to_num = $booking->user->user_profile->phone;
-            $message = $booking->rider->name . ' has been dropped off by the Skoolbus at ' . $booking->busroute->toLocation->name . ' (' . now()->format('H:i') . '). Thank you for using Skoolbus.';
-            sendWhatsAppNotification($to_num, $message);
+
+            switch ($status) {
+                case 'booked':
+                    $message = 'Good day ' . $booking->user->name . '. ';
+                    $message .= 'This message is to inform you that ' . $booking->rider->name;
+                    $message .= ' was not on the Skoolbus for the booking from ' . $booking->busroute->toLocation->name . ' to ' . $booking->busroute->fromLocation->name;
+                    $message .= ' at ' . $booking->busroute->timeslot->departure_time ;
+                    sendWhatsAppNotification($to_num, $message);
+                    break;
+
+                case 'completed':
+                    $message = $booking->rider->name . ' has been dropped off at ' . $booking->busroute->toLocation->name . ' (' . now()->format('H:i') . '). Thank you for using Skoolbus.';
+                    sendWhatsAppNotification($to_num, $message);
+                    break;
+
+                default:
+                    break;
+            }
         }
         
         //remove the route from the driver routes
@@ -157,6 +175,7 @@ class DriverRoutes extends Page
 
         return 'success';
     }
+
 
     public static function shouldRegisterNavigation(): bool
     {

@@ -58,3 +58,16 @@ if(!function_exists('sendWhatsAppNotification')){
 
     }
 }
+
+if(!function_exists('oxfordImplode')){
+    function oxfordImplode($glue, array $array) {
+        if (count($array) == 1) {
+            return $array[0];
+        } else if (count($array) == 2) {
+            return $array[0] . ' and ' . $array[1];
+        } else {
+            $lastItem = array_pop($array);
+            return implode($glue, $array) . ', and ' . $lastItem;
+        }
+    }
+}
