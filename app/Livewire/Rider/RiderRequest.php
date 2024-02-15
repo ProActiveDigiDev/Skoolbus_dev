@@ -1,24 +1,21 @@
 <?php
 
-namespace App\Filament\Admin\Pages;
+namespace App\Livewire\Rider;
 
 use App\Models\Rider;
+use Livewire\Component;
 use App\Models\BusRoute;
 use Filament\Pages\Page;
 use App\Models\UserBooking;
-use App\Models\UserProfile;
 use App\Models\WebsiteConfigs;
 use Illuminate\Support\Carbon;
 use App\Models\EmergencyContact;
 use Filament\Pages\Actions\Action;
 use App\Models\EmergencyInformation;
-use App\Http\Controllers\CronNotifications;
 use App\Http\Controllers\WhatsAppController;
 
-class RideRequest extends Page
+class RiderRequest extends Component
 {
-    protected static string $view = 'filament.admin.pages.ride-request';
-
     protected static ?string $title = 'Ride Request';
     
 
@@ -32,11 +29,18 @@ class RideRequest extends Page
     public ?EmergencyContact $emergency_contact = null;
     public array $request_message = [];
 
+    public function render()
+    {
+        // return view('livewire.rider.rider-request');
+        return view('filament.admin.pages.ride-request');
+    }
+    
     public function mount(string $rider)
     {
         if (!auth()->check() || !auth()->user()->hasRole(['super_admin', 'admin_user', 'driver_user'])) {
             return redirect()->route("user-login");
-        }        
+        }
+        
 
         $this->website_configs = $this->getWebsiteConfigs();
 
@@ -51,20 +55,9 @@ class RideRequest extends Page
 
     public function getRiderInfo($rider_id)
     {
-        $rider_info = Rider::where('id', $rider_id)
-        ->get()
-        ->first();
+        $rider_info = Rider::where('id', $rider_id)->get()->first();
 
         return $rider_info = $rider_info ? $rider_info : null;
-    }
-
-    public function getParentInfo($parent_id)
-    {
-        $parent_info = UserProfile::where('user_id', $parent_id)
-        ->get()
-        ->first();
-
-        return $parent_info = $parent_info ? $parent_info : null;
     }
 
     public function getRiderEmergencyContact($rider_id)
@@ -94,37 +87,40 @@ class RideRequest extends Page
 
         
         //make current time for dev purposes
-        if(env('APP_ENV') == 'local'){
-            $time = Carbon::createFromFormat('H:i', '05:30', 'Africa/Johannesburg');
-        }
+        $time = Carbon::createFromFormat('H:i', '06:30', 'Africa/Johannesburg');
+
         //get all bookings for today
         $riderBookings = UserBooking::where('rider_id', $rider_id)
         ->where('busroute_date', '=', $today)
-        ->where('busroute_status', '=', 'booked')
         ->orderBy('busroute_date', 'asc')
         ->with(['busroute.timeslot'])
         ->get();
-
-        $currentBooking = null;
         
-        //check if booking is within 45 minutes before departure time and 15 minutes after departure time
+        
+        //check if time is in the past and remove from $riderBookings
+        $nTime = $time->copy()->subminutes(35)->toTimeString();
         foreach($riderBookings as $booking){
-            $departure_time = $booking->busroute->timeslot->departure_time;
-            $departure_time = Carbon::createFromFormat('H:i', $departure_time, 'Africa/Johannesburg');
-            $futureTime = $departure_time->copy()->addminutes(16)->toTimeString(); //Allow 15 minutes after departure time to pick up rider
-            $pastTime = $departure_time->copy()->subminutes(46)->toTimeString(); //Allow 45 minutes before departure time to pick up rider
-            if($time->toTimeString() > $pastTime && $time->toTimeString() < $futureTime){
+            if($booking['busroute']['timeslot']['departure_time'] < $nTime){
+                $riderBookings = $riderBookings->except($booking['id']);
+            }
+        }
+        
+        //get the next booking closests to current time
+        $currentBooking = null;
+        $closestNextBookingTime = null;
+        
+        foreach($riderBookings as $booking){
+            $bookingTime = Carbon::createFromFormat('H:i', $booking['busroute']['timeslot']['departure_time'], 'Africa/Johannesburg');
+            
+            if ($closestNextBookingTime == null || $bookingTime->diffInSeconds($time) < $closestNextBookingTime->diffInSeconds($time)) {
+                $closestNextBookingTime = $bookingTime;
                 $currentBooking = $booking;
             }
         }
         
-        if($riderBookings && $riderBookings->count() > 0){
-            //remove the $currentBooking if there is one
-            if($currentBooking){
-                $riderBookings = $riderBookings->where('id', '!=', $currentBooking->id);
-            }
-            //remove the bookings that are in the past
-            $riderBookings = $riderBookings->where('busroute.timeslot.departure_time', '>', $time->toTimeString());
+        if($riderBookings->count() > 0){
+            //remove the closest next booking from the collection
+            $riderBookings = $riderBookings->except($currentBooking['id']);
             //sort the collection by departure time
             $riderBookings = $riderBookings->sortBy('busroute.timeslot.departure_time');
             //get the first booking in the collection
@@ -132,7 +128,6 @@ class RideRequest extends Page
             //set the booking after the closest next booking
             $this->next_booking = $closestNextBookingAfter ?? null;
         }
-
 
         return $currentBooking = $currentBooking ?? null;
     }
@@ -163,18 +158,16 @@ class RideRequest extends Page
 
     public function acceptRequest()
     {
-        $route_info = $this->getBookingRouteInfo($this->current_booking['busroute_id']);
-        $parent_info = $this->getParentInfo($this->rider_info->user_id);
-        $to_num = $parent_info->phone;
-        $now = Carbon::now('Africa/Johannesburg')->format('H:i');
+        $message = $this->rider_info->first_name . " has been picked up by the bus at " . now()->toTimeString() . ". The bus is on the way to " . $this->route_info->toLocation->location_name . ". The bus will arrive at " . $this->route_info->toLocation->location_name . " at " . $this->route_info->timeslot->departure_time . ". Please be ready to receive " . $this->rider_info->first_name . " at " . $this->route_info->toLocation->location_name . " at " . $this->route_info->timeslot->departure_time . ".";
+        $to_num = null;
+        $this->sendNotification($to_num, $message);
 
-        $message = $this->rider_info->name . " has been picked up by the Skoolbus at " .  $route_info->fromLocation->name . ' (' . $now . "). Heading to ". $route_info->toLocation->name . ".";
-
+        dd($this->rider_info);
         $bookingStatus = $this->updateBookingStatus('intransit');
         
         if($bookingStatus){
             $this->addRiderToCurrentRoute();        
-            sendWhatsAppNotification($to_num, $message);
+            $this->sendNotification();
         }
         $this->request_message = ['success', 'DONE'];
 
@@ -226,7 +219,18 @@ class RideRequest extends Page
     public function addRiderToCurrentRoute()
     {
 
-    }    
+    }
+
+    Public function sendNotification($to_num, $message)
+    {
+        //send notification to rider parent
+        $to_num = null;
+
+        $whatsapp = new WhatsAppController();
+        $whatsapp->sendWhatsAppMessage($to_num, $message);
+
+
+    }
 
     public function validateRequestedBooking()
     {
@@ -237,12 +241,7 @@ class RideRequest extends Page
         }
    
         if(!$this->current_booking = $this->getNextBooking($this->rider_id)){
-            if($this->next_booking){
-                $nextBookingOpeningTime = Carbon::createFromFormat('H:i', $this->next_booking['busroute']['timeslot']['departure_time'], 'Africa/Johannesburg')->subMinutes(45)->format('H:i');
-                return ['noBooking', '<sub>Next booked ride:</sub> <br><strong>' . $this->next_booking['busroute']['name'] . '<br>' . $this->next_booking['busroute']['timeslot']['departure_time'] . '<br> <sup>Opening time:<br>' . $nextBookingOpeningTime . '</sup></strong>'];
-            }else{
-                return ['noBooking', 'No booking found'];
-            }
+            return ['noBooking', 'No booking found for today'];
         }
 
         if(!$this->route_info = $this->getBookingRouteInfo($this->current_booking['busroute_id'])){
@@ -254,6 +253,7 @@ class RideRequest extends Page
             return ['bookingStatus', "This requested booking status is: '" . $bookingStatus . "'"];
         }
 
+        // Return the original result to allow method chaining
         return $result;
     }
 
@@ -270,3 +270,4 @@ class RideRequest extends Page
         return false;
     }
 }
+
