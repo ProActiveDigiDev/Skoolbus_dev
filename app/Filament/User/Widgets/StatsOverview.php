@@ -2,8 +2,11 @@
 
 namespace App\Filament\User\Widgets;
  
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use App\Models\UserAccount;
+use App\Models\UserBooking;
+use App\Models\CreditPurchases;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
  
 class StatsOverview extends BaseWidget
 {
@@ -13,43 +16,55 @@ class StatsOverview extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('countdown', $this->countdownTimer())
-                ->label('We start riding in')
-                ->description($this->getNextRide())
+            Stat::make('credits', $this->getCredits())
+                ->label('Credits available')
+                ->description('Last pruchase: ' . $this->getLastCreditPurchase())
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('primary'),
-            Stat::make('riders', $this->getRiders('count'))
-                ->label('Riders registered')
+            Stat::make('nextRide', $this->getNextRide())
+                ->label('Next ride')
+                ->description("Rides booked: " . $this->getBookingsCount())
+                ->descriptionIcon('heroicon-m-bell-alert')
+                ->color('primary'),
+                Stat::make('riders', $this->getRiders('count'))
+                ->label('Riders')
                 ->description($this->getRiders('names'))
                 ->descriptionIcon('heroicon-m-users')
-                ->color('primary'),
-            Stat::make('bookings', '0')
-                ->label('Rides booked')
-                ->description('Next ride: 05/02/2024 - 06:30')
-                ->descriptionIcon('heroicon-m-bell-alert')
                 ->color('primary'),
         ];
     }
 
-    public function countdownTimer(){
-        //Get current time
-        $now = time();
-        //Get the time of the next bus arrival
-        $busArrival = strtotime($this->getNextRide());
-        //Calculate the time difference between the two
-        $difference = $busArrival - $now;
-
-        //amount of days left
-        $days = floor($difference / (60 * 60 * 24));
-
-        //Display the countdown
-        $days_disp = ($days > 0) ? $days . ' days ' : ' Today';
-        return "$days_disp";
+    public function getCredits(){
+        $credits = UserAccount::where('user_id', auth()->user()->id)
+                    ->select('user_credits')
+                    ->first();
+        $credits = $credits ?? 0;
+        return $credits->user_credits;   
     }
 
+    public function getLastCreditPurchase(){
+        $credits = CreditPurchases::where('user_id', auth()->user()->id)
+                    ->select('updated_at')
+                    ->first();
+        $credits = $credits ?? 'No credits purchase yet';
+        return $credits->updated_at->format('d M Y');
+    }
+
+
     public function getNextRide(){
-        $busArrival = "2024-02-05 06:30";
-        return $busArrival;
+        $booking = UserBooking::where('user_id', auth()->user()->id)
+                    ->whereDate('busroute_date', '>=', date('Y-m-d'))
+                    ->orderBy('busroute_date', 'asc')
+                    ->first();
+        $booking = $booking ?? '--';
+        return $booking;
+    }
+
+    public function getBookingsCount(){
+        $bookings = UserBooking::where('user_id', auth()->user()->id)
+                    ->count();
+        $bookings = $bookings ?? 0;
+        return $bookings;
     }
 
     public function getRiders($type){
