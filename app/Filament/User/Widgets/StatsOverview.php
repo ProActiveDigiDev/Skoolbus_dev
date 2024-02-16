@@ -56,7 +56,10 @@ class StatsOverview extends BaseWidget
                     ->whereDate('busroute_date', '>=', date('Y-m-d'))
                     ->orderBy('busroute_date', 'asc')
                     ->first();
-        $booking = $booking ?? '--';
+        //turn $booking->busroute_date from string to date
+        $booking->busroute_date = date('d M Y', strtotime($booking->busroute_date));      
+        $booking = $booking->busroute_date ?? 'No ride booked yet';
+
         return $booking;
     }
 
