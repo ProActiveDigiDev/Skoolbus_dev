@@ -1,9 +1,12 @@
 <?php
 
 namespace App\Filament\Admin\Widgets;
- 
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+
+use App\Models\Rider;
+use App\Models\UserBooking;
+use Carbon\Carbon;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
  
 class StatsOverview extends BaseWidget
 {
@@ -13,73 +16,75 @@ class StatsOverview extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Next Ride', $this->countdownTimer())
-                ->description($this->getNextRide())
+            Stat::make('Bookings made today', $this->bookingsMadeToday()->count())
+                ->description($this->bookingsMadeSince(7)->count() . ' in the last 7 days')
+                ->chart($this->bookingsMadeTodayChart(7))
+                ->descriptionIcon('heroicon-m-arrow-trending-up')
+                ->color('success'),
+            Stat::make('Rides booked for today', $this->bookingsForToday()->count())
+                ->description('Yesterday: ' . $this->bookingsForYesterday()->count() . ' | Tomorrow: ' . $this->bookingsForTomorrow()->count())
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('success'),
-            Stat::make('Parents', $this->users('parents'))
-                ->description($this->users('riders') . ' Total Riders')
+            Stat::make('Total Riders', $this->ridersCount())
+                ->description($this->newRidersCount() . ' new this month')
                 ->descriptionIcon('heroicon-m-users')
-                ->color($this->getColor()),
-            Stat::make('Unique views', '192.1k')
-                ->description('32k increase')
-                ->descriptionIcon('heroicon-m-arrow-trending-up')
-                ->chart([7, 2, 10, 3, 15, 4, 17])
                 ->color('success'),
         ];
     }
 
-    public function countdownTimer(){
-        //Get current time
-        $now = time();
-        //Get the time of the next bus arrival
-        $busArrival = strtotime($this->getNextRide());
-        //Calculate the time difference between the two
-        $difference = $busArrival - $now;
-        //Format the time difference into hours, minutes and seconds
-        $hours = floor($difference / 3600);
-        $minutes = floor(($difference / 60) % 60);
-        $seconds = $difference % 60;
-        //Display the countdown
-        return "$hours:$minutes:$seconds";
+
+    public function bookingsMadeToday(){
+        $bookings = UserBooking::whereDate('created_at', Carbon::today());
+
+        return $bookings;
     }
 
-    public function getNextRide(){
-        $busArrival = "2023-11-24 09:00";
-        return $busArrival;
+    public function bookingsMadeSince($xDays){
+        $bookings = UserBooking::whereDate('created_at', '>=', Carbon::today()->subDays($xDays));
+
+        return $bookings;
     }
 
-    public function users($type){
-        if($type == 'total'){
-            //count the total number of users from User model
-            $users = \App\Models\User::count();
-            return $users;
+    public function bookingsMadeTodayChart($xDays){
+        $data = [];
+        for($i = $xDays; $i > 0; $i--){
+            $date = Carbon::today()->subDays($i);
+            $bookings = UserBooking::whereDate('created_at', $date)->count();
+            $data[] = $bookings;
         }
-
-        if($type == 'parents'){
-            //count the total number of users from User model with role of parent_user
-            // $users = \App\Models\User::where('role', 'parent_user')->count();
-            return "33"; //$users;
-        }
-
-        
-        if($type == 'riders'){
-            //count the total number of users from User model with role of rider_user
-            // $users = \App\Models\User::where('role', 'rider_user')->count();
-            return "52"; //$users;
-        }
+        return $data;
     }
 
-    public function getColor(){
-        $users = $this->users('parents');
-        if($users > 10){
-            if($users < 20){
-                return 'warning';
-            }else{
-                return 'success';
-            }
-        }else{
-            return 'danger';
-        }
+    
+    public function bookingsForToday(){
+        $bookings = UserBooking::whereDate('busroute_date', Carbon::today());
+
+        return $bookings;
     }
+
+    public function bookingsForYesterday(){
+        $bookings = UserBooking::whereDate('busroute_date', Carbon::yesterday());
+
+        return $bookings;
+    }
+
+    public function bookingsForTomorrow(){
+        $bookings = UserBooking::whereDate('busroute_date', Carbon::tomorrow());
+
+        return $bookings;
+    }
+    
+
+    public function ridersCount(){
+        $riders = Rider::all()->count();
+
+        return $riders;
+    }
+
+    public function newRidersCount(){
+        $riders = Rider::whereMonth('created_at', Carbon::now()->month)->count();
+
+        return $riders;
+    }
+
 }
